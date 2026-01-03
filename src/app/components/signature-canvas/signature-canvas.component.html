@@ -1,0 +1,45 @@
+<div class="signature-container animate-fade-in">
+  <div class="canvas-wrapper">
+    <canvas
+      #canvas
+      class="signature-canvas"
+      role="img"
+      [attr.aria-label]="'Canvas para dibujar firma digital. ' + (hasSignature() ? 'Firma presente.' : 'Canvas vacío.')"
+      tabindex="0"
+    ></canvas>
+  </div>
+  
+  <div class="controls">
+    <button
+      type="button"
+      class="btn btn-secondary"
+      (click)="clearCanvas()"
+      [attr.aria-label]="'Limpiar firma'"
+      [disabled]="!hasSignature()"
+    >
+      Limpiar
+    </button>
+    
+    <div class="download-buttons">
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="downloadPNG()"
+        [attr.aria-label]="'Descargar firma como imagen PNG'"
+        [disabled]="!hasSignature()"
+      >
+        Descargar PNG
+      </button>
+      
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="downloadSVG()"
+        [attr.aria-label]="'Descargar firma como imagen SVG'"
+        [disabled]="!hasSignature()"
+      >
+        Descargar SVG
+      </button>
+    </div>
+  </div>
+</div>

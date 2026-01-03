@@ -1,0 +1,122 @@
+.signature-container {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.canvas-wrapper {
+  background-color: #ffffff;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  margin-bottom: 1.5rem;
+  transition: border-color var(--transition-duration, 300ms) var(--transition-easing, ease-in-out);
+}
+
+.canvas-wrapper:focus-within {
+  border-color: #3b82f6;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+.signature-canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+  cursor: crosshair;
+  touch-action: none;
+  background-color: #ffffff;
+  border-radius: 0.25rem;
+}
+
+.signature-canvas:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 4px;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.download-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-duration, 300ms) var(--transition-easing, ease-in-out);
+  text-align: center;
+  min-height: 44px;
+}
+
+.btn:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background-color: #3b82f6;
+  color: #ffffff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #2563eb;
+}
+
+.btn-primary:active:not(:disabled) {
+  background-color: #1d4ed8;
+}
+
+.btn-secondary {
+  background-color: #6b7280;
+  color: #ffffff;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: #4b5563;
+}
+
+.btn-secondary:active:not(:disabled) {
+  background-color: #374151;
+}
+
+@media (min-width: 640px) {
+  .controls {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .download-buttons {
+    flex-direction: row;
+    gap: 0.75rem;
+  }
+
+  .btn {
+    min-width: 150px;
+  }
+}
+
+@media (min-width: 768px) {
+  .signature-container {
+    padding: 2rem;
+  }
+}
+

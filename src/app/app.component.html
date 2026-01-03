@@ -1,0 +1,12 @@
+<div class="app-container">
+  <app-loader *ngIf="isLoading"></app-loader>
+  
+  <main class="main-content" [class.loaded]="!isLoading">
+    <header class="header">
+      <h1 class="title">Firma Digital</h1>
+      <p class="subtitle">Dibuja tu firma en el área de abajo y descárgala cuando estés listo</p>
+    </header>
+    
+    <app-signature-canvas></app-signature-canvas>
+  </main>
+</div>
