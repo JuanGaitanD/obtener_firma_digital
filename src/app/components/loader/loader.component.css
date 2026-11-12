@@ -1,38 +1,34 @@
 .loader-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(255, 255, 255, 0.95);
+  inset: 0;
   display: flex;
   justify-content: center;
   align-items: center;
+  background-color: var(--mesa);
   z-index: 9999;
-  animation: fadeIn 0.3s ease-in-out;
 }
 
-.loader-spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid #e5e7eb;
-  border-top-color: #3b82f6;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+.loader-firma {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+.loader-x {
+  stroke: var(--sello);
+  stroke-width: 2.5;
 }
 
-@keyframes fadeIn {
+/* Una sola pasada: el estado base es la línea completa, así con movimiento reducido queda quieta */
+.loader-linea {
+  stroke: var(--tinta);
+  stroke-width: 2;
+  stroke-dasharray: 1;
+  animation: traza 700ms var(--curva) both;
+}
+
+@keyframes traza {
   from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
+    stroke-dashoffset: 1;
   }
 }
-
