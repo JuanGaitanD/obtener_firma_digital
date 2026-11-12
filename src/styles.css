@@ -253,12 +253,22 @@ a, u, ins, abbr[title] {
   box-shadow: 0 var(--canto) 0 0 var(--canto-secundario);
 }
 
+.modos__item {
+  position: relative;
+  display: flex;
+  flex: 1;
+}
+
+/* El radio cubre su etiqueta: invisible pero real (el clic y el teclado van a él) */
 .modos__radio {
   position: absolute;
-  width: 1px;
-  height: 1px;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
   margin: 0;
   opacity: 0;
+  cursor: pointer;
 }
 
 .modos__opcion {
@@ -295,7 +305,7 @@ a, u, ins, abbr[title] {
   box-shadow: inset 0 -2px 0 0 var(--accion-canto);
 }
 
-.modos__radio:not(:checked) + .modos__opcion:hover {
+.modos__radio:not(:checked):hover + .modos__opcion {
   background: var(--accion-suave);
 }
 

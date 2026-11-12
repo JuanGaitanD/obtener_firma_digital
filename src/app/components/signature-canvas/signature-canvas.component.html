@@ -3,16 +3,20 @@
     <h2 id="hoja-titulo" class="hoja__titulo">Área de firma</h2>
     <fieldset class="modos">
       <legend class="sr-only">Cómo firmar</legend>
-      <input type="radio" name="modo" id="modo-dibujar" class="modos__radio" value="dibujar" [checked]="modo === 'dibujar'" (change)="cambiarModo('dibujar')">
-      <label for="modo-dibujar" class="modos__opcion">
-        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19l-4 1z"/><path d="M14.5 6.5l3 3"/></svg>
-        Dibujar
-      </label>
-      <input type="radio" name="modo" id="modo-escribir" class="modos__radio" value="escribir" [checked]="modo === 'escribir'" (change)="cambiarModo('escribir')">
-      <label for="modo-escribir" class="modos__opcion">
-        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 7V5h14v2"/><path d="M12 5v14"/><path d="M9 19h6"/></svg>
-        Escribir
-      </label>
+      <span class="modos__item">
+        <input type="radio" name="modo" id="modo-dibujar" class="modos__radio" value="dibujar" [checked]="modo === 'dibujar'" (change)="cambiarModo('dibujar')">
+        <label for="modo-dibujar" class="modos__opcion">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19l-4 1z"/><path d="M14.5 6.5l3 3"/></svg>
+          Dibujar
+        </label>
+      </span>
+      <span class="modos__item">
+        <input type="radio" name="modo" id="modo-escribir" class="modos__radio" value="escribir" [checked]="modo === 'escribir'" (change)="cambiarModo('escribir')">
+        <label for="modo-escribir" class="modos__opcion">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 7V5h14v2"/><path d="M12 5v14"/><path d="M9 19h6"/></svg>
+          Escribir
+        </label>
+      </span>
     </fieldset>
     <p class="estado" role="status">
       @if (hasSignature()) {
