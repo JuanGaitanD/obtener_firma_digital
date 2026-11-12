@@ -1,13 +1,16 @@
 .app-container {
   min-height: 100vh;
-  background: linear-gradient(to bottom, #f9fafb, #ffffff);
+  background: var(--mesa);
 }
 
+/* Ancho fijo (no depende de la fuente): el lienzo se mide una sola vez al iniciar.
+   Solo fundido en la entrada; un desplazamiento movería el rect que usa el trazo. */
 .main-content {
-  min-height: 100vh;
-  padding: 2rem 1rem;
+  max-width: 898px; /* 834 de la hoja + 2 × 32 de canal */
+  margin: 0 auto;
+  padding: 32px 16px 24px;
   opacity: 0;
-  transition: opacity var(--transition-duration, 300ms) var(--transition-easing, ease-in-out);
+  transition: opacity 200ms var(--curva);
 }
 
 .main-content.loaded {
@@ -15,60 +18,64 @@
 }
 
 .header {
-  text-align: center;
-  margin-bottom: 3rem;
-  animation: fadeIn 0.5s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
 }
 
 .title {
-  font-size: 2.5rem;
-  font-weight: 600;
-  color: #111827;
-  margin: 0 0 1rem 0;
-  letter-spacing: -0.025em;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  color: var(--tinta);
+  margin: 0 0 8px;
 }
 
 .subtitle {
   font-size: 1.125rem;
-  color: #6b7280;
+  color: var(--tinta-2);
   margin: 0;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
+  max-width: 34rem;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.meta {
+  font-size: 0.875rem;
+  color: var(--tinta-2);
+  margin: 0;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 768px) {
   .main-content {
-    padding: 3rem 2rem;
+    padding-inline: 24px;
   }
 
   .title {
-    font-size: 3rem;
-  }
-
-  .subtitle {
-    font-size: 1.25rem;
+    font-size: 2.75rem;
   }
 }
 
 @media (min-width: 1024px) {
   .main-content {
-    padding: 4rem 2rem;
+    padding-inline: 32px;
   }
 
-  .title {
-    font-size: 3.5rem;
+  .header {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 32px;
+  }
+
+  .subtitle {
+    max-width: 30rem;
+  }
+
+  .meta {
+    max-width: 15rem;
+    text-align: right;
+    padding-bottom: 4px;
   }
 }
-
