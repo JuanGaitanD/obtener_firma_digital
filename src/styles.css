@@ -33,7 +33,7 @@
   --r-control: 6px;
   --r-sello: 999px;
   --canto: 3px;
-  --sombra-hoja: 0 1px 0 oklch(0.86 0.016 15), 0 14px 32px -14px oklch(0.25 0.035 262 / 0.22);
+  --sombra-hoja: 0 1px 0 #dbcdcd, 0 14px 32px -14px rgb(24 34 51 / 0.22); /* oklch(0.86 0.016 15) y tinta al 22 %, en sRGB para Safari < 15.4 */
 
   /* Movimiento */
   --rapido: 120ms;
@@ -69,15 +69,25 @@ a, u, ins, abbr[title] {
   display: none !important;
 }
 
-/* Foco con teclado: anillo propio, solo :focus-visible, separado del control por el hueco y el canto */
-:where(button, select, input, a, [tabindex]):focus {
-  outline: none;
+/* Foco con teclado: anillo propio, solo :focus-visible, separado del control por el hueco y el canto.
+   Sin :focus-visible (Safari < 15.4) se conserva el anillo del navegador y el de los modos sale con :focus. */
+@supports selector(:focus-visible) {
+  :where(button, select, input, a, [tabindex]):focus {
+    outline: none;
+  }
+
+  :where(button, select, input, a, [tabindex]):focus-visible,
+  .modos__radio:focus-visible + .modos__opcion {
+    outline: 3px solid var(--foco);
+    outline-offset: calc(var(--canto) + 2px);
+  }
 }
 
-:where(button, select, input, a, [tabindex]):focus-visible,
-.modos__radio:focus-visible + .modos__opcion {
-  outline: 3px solid var(--foco);
-  outline-offset: calc(var(--canto) + 2px);
+@supports not selector(:focus-visible) {
+  .modos__radio:focus + .modos__opcion {
+    outline: 3px solid var(--foco);
+    outline-offset: 2px;
+  }
 }
 
 @media (forced-colors: active) {
@@ -104,7 +114,9 @@ a, u, ins, abbr[title] {
   transition: background-color var(--rapido), box-shadow var(--rapido), transform var(--rapido);
 }
 
-.boton svg {
+.boton svg,
+.modos__opcion svg,
+.privacidad svg {
   width: 20px;
   height: 20px;
   flex: none;
@@ -122,9 +134,6 @@ a, u, ins, abbr[title] {
   box-shadow: 0 var(--canto) 0 0 var(--accion-canto);
 }
 
-.boton--primario:hover:not(:disabled) {
-  background: var(--accion-hover);
-}
 
 .boton--secundario {
   background: var(--hoja);
@@ -133,9 +142,6 @@ a, u, ins, abbr[title] {
   box-shadow: 0 var(--canto) 0 0 var(--canto-secundario);
 }
 
-.boton--secundario:hover:not(:disabled) {
-  background: var(--accion-suave);
-}
 
 .boton:active:not(:disabled) {
   transform: translateY(var(--canto));
@@ -149,6 +155,22 @@ a, u, ins, abbr[title] {
   color: var(--sobre-deshabilitado);
   border-color: transparent;
   cursor: not-allowed;
+}
+
+/* Cursor encima: solo con puntero que puede hacer hover; en táctil el estado se quedaría pegado */
+@media (hover: hover) {
+  .boton--primario:hover:not(:disabled) {
+    background: var(--accion-hover);
+  }
+
+  .boton--secundario:hover:not(:disabled),
+  .modos__radio:not(:checked):hover + .modos__opcion {
+    background: var(--accion-suave);
+  }
+
+  .selector:hover {
+    background-color: var(--accion-suave);
+  }
 }
 
 /* Campo con etiqueta visible y select dibujado, con respaldo nativo */
@@ -181,9 +203,6 @@ a, u, ins, abbr[title] {
   transition: background-color var(--rapido), box-shadow var(--rapido);
 }
 
-.selector:hover {
-  background-color: var(--accion-suave);
-}
 
 @supports (appearance: base-select) {
   .selector,
@@ -227,6 +246,8 @@ a, u, ins, abbr[title] {
   border: 1px solid var(--borde-campo);
   border-radius: var(--r-control);
   background: var(--hoja);
+  -webkit-appearance: none;
+  appearance: none;
   box-shadow: inset 0 2px 0 0 var(--separador);
   font: 400 1rem/1.5 var(--fuente);
   color: var(--tinta);
@@ -288,26 +309,12 @@ a, u, ins, abbr[title] {
   transition: background-color var(--rapido), color var(--rapido);
 }
 
-.modos__opcion svg {
-  width: 20px;
-  height: 20px;
-  flex: none;
-  stroke: currentColor;
-  fill: none;
-  stroke-width: 1.75;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
 .modos__radio:checked + .modos__opcion {
   background: var(--accion);
   color: var(--sobre-accion);
   box-shadow: inset 0 -2px 0 0 var(--accion-canto);
 }
 
-.modos__radio:not(:checked):hover + .modos__opcion {
-  background: var(--accion-suave);
-}
 
 @media (pointer: coarse) {
   .modos__opcion {
@@ -320,6 +327,40 @@ a, u, ins, abbr[title] {
     forced-color-adjust: none;
     background: Highlight;
     color: HighlightText;
+  }
+
+  /* La firma es tinta negra y no se pinta con los colores del sistema: si el fondo pasara a negro, no se vería.
+     El lienzo, su guía, la vista previa y el campo de nombre se quedan sobre papel claro. */
+  .canvas-wrapper {
+    forced-color-adjust: none;
+    background: var(--hoja);
+  }
+}
+
+/* Sello: momento focal al iniciar la descarga. El estado base es el final (inclinado),
+   así con movimiento reducido aparece ya puesto. */
+.sello {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 6px;
+  border: 2px solid var(--sello);
+  border-radius: var(--r-sello);
+  background: var(--sello-suave);
+  color: var(--sello);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  transform: rotate(-4deg);
+  animation: sello-cae 220ms var(--curva);
+}
+
+@keyframes sello-cae {
+  from {
+    opacity: 0;
+    transform: scale(1.25) rotate(-10deg);
   }
 }
 

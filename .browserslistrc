@@ -1,0 +1,8 @@
+# Navegadores objetivo (los lee el build de Angular y Autoprefixer).
+# Suelo de Angular 19: cualquier navegador con módulos ES (Safari 10.1, Chrome 61…); Tailwind 3 llega a Safari 14.
+Safari >= 14
+iOS >= 14
+Chrome >= 90
+Edge >= 90
+Firefox >= 90
+Samsung >= 15

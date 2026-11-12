@@ -78,7 +78,8 @@
 /* Vista previa de la firma escrita: misma caja que el canvas, en sus mismas coordenadas */
 .vista {
   position: absolute;
-  inset: 8px 16px 16px;
+  top: 8px;
+  left: 16px;
   width: calc(100% - 32px);
   height: calc(100% - 24px);
   pointer-events: none;
@@ -87,7 +88,8 @@
 /* El campo ocupa el sitio de la pista: encima de la línea de firma, sin mover nada */
 .escritura {
   position: absolute;
-  inset: 8px 16px auto;
+  top: 8px;
+  left: 16px;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -265,38 +267,15 @@
   opacity: 0;
 }
 
-/* Sello: momento focal al iniciar la descarga. El estado base es el final (inclinado),
-   así con movimiento reducido aparece ya puesto. */
-.sello {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 40px;
-  height: 40px;
-  padding: 0 6px;
-  border: 2px solid var(--sello);
-  border-radius: var(--r-sello);
-  background: var(--sello-suave);
-  color: var(--sello);
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  transform: rotate(-4deg);
-  animation: sello-cae 220ms var(--curva);
-}
-
-@keyframes sello-cae {
-  from {
-    opacity: 0;
-    transform: scale(1.25) rotate(-10deg);
-  }
-}
-
-.nota {
+.nota,
+.privacidad {
   max-width: 834px;
   margin: 12px auto 0;
   font-size: 0.875rem;
   color: var(--tinta-2);
+}
+
+.nota {
   font-variant-numeric: tabular-nums;
 }
 
@@ -313,19 +292,10 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  max-width: 834px;
-  margin: 4px auto 0;
-  font-size: 0.875rem;
-  color: var(--tinta-2);
+  margin-top: 4px;
 }
 
 .privacidad svg {
   width: 16px;
   height: 16px;
-  flex: none;
-  stroke: currentColor;
-  fill: none;
-  stroke-width: 1.75;
-  stroke-linecap: round;
-  stroke-linejoin: round;
 }
