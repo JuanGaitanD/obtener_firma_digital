@@ -3,18 +3,18 @@
   background: var(--mesa);
 }
 
-/* Ancho fijo (no depende de la fuente): el lienzo se mide una sola vez al iniciar.
-   Solo fundido en la entrada; un desplazamiento movería el rect que usa el trazo. */
+/* Ancho fijo (no depende de la fuente): el lienzo se mide una sola vez al iniciar. */
 .main-content {
   max-width: 898px; /* 834 de la hoja + 2 × 32 de canal */
   margin: 0 auto;
   padding: 32px 16px 24px;
-  opacity: 0;
-  transition: opacity 200ms var(--curva);
+  animation: entrada 200ms var(--curva);
 }
 
-.main-content.loaded {
-  opacity: 1;
+@keyframes entrada {
+  from {
+    opacity: 0;
+  }
 }
 
 .header {

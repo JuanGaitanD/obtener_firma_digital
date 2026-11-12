@@ -19,7 +19,7 @@
   --sobre-accion: #fefcfd;     /* texto sobre la acción */
   --accion-suave: #e3ebfd;     /* oklch(0.94 0.025 266) estado «lista», hover de secundario y select */
   --canto-secundario: #b7bec7; /* oklch(0.8 0.015 255)  canto del secundario y del select */
-  --sello: #b63d29;            /* oklch(0.53 0.16 32)   solo la «X», el sello y la «X» del cargador */
+  --sello: #b63d29;            /* oklch(0.53 0.16 32)   solo la «X» de la guía y el sello */
   --sello-suave: #ffe9e4;      /* oklch(0.95 0.025 32)  relleno del sello */
   --foco: var(--tinta);
   --deshabilitado: #eae5e5;    /* oklch(0.925 0.006 15) */
