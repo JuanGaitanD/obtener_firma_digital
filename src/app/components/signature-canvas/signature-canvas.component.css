@@ -308,3 +308,24 @@
   font-weight: 600;
   color: var(--tinta);
 }
+
+.privacidad {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 834px;
+  margin: 4px auto 0;
+  font-size: 0.875rem;
+  color: var(--tinta-2);
+}
+
+.privacidad svg {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
