@@ -185,4 +185,12 @@ export class SignatureCanvasComponent implements AfterViewInit, OnDestroy {
   hasSignature(): boolean {
     return this.allPaths.length > 0 || this.currentPath.length > 0;
   }
+
+  formato: 'png' | 'svg' = 'png';
+  ultimaDescarga: 'png' | 'svg' | null = null;
+
+  descargar(): void {
+    if (this.formato === 'png') this.downloadPNG(); else this.downloadSVG();
+    this.ultimaDescarga = this.formato;
+  }
 }

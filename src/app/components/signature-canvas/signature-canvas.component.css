@@ -49,24 +49,77 @@
 }
 
 .hoja__pie {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px 16px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: 12px;
   padding: 16px 16px 13px; /* 13 + 3 de canto = 16 */
   border-top: 1px solid var(--separador);
 }
 
-.descargas {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 8px 12px;
+/* En 390 px: el select a todo el ancho y debajo Limpiar + Descargar, al alcance del pulgar */
+.campo--linea {
+  grid-column: 1 / -1;
+}
+
+.boton--descargar {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.boton--limpiar {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.hoja__pie .boton {
+  padding-inline: 16px;
+}
+
+.campo--linea .selector {
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .hoja__pie {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+  }
+
+  .campo--linea {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .campo--linea .campo__etiqueta {
+    line-height: 44px;
+  }
+
+  .campo--linea .selector {
+    width: auto;
+  }
+
+  .hoja__pie .boton {
+    padding-inline: 20px;
+  }
+
+  .boton--descargar {
+    min-width: 172px;
+  }
+
+  .boton--limpiar {
+    order: -1;
+    margin-right: auto;
+  }
 }
 
 /* Estado visible; el anuncio lo hace la región role="status" */
 .estado {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin: 0;
   font-size: 0.875rem;
   line-height: 1.2;
@@ -168,4 +221,44 @@
 
 .pista--oculta {
   opacity: 0;
+}
+
+/* Sello: momento focal al iniciar la descarga. El estado base es el final (inclinado),
+   así con movimiento reducido aparece ya puesto. */
+.sello {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 6px;
+  border: 2px solid var(--sello);
+  border-radius: var(--r-sello);
+  background: var(--sello-suave);
+  color: var(--sello);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  transform: rotate(-4deg);
+  animation: sello-cae 220ms var(--curva);
+}
+
+@keyframes sello-cae {
+  from {
+    opacity: 0;
+    transform: scale(1.25) rotate(-10deg);
+  }
+}
+
+.nota {
+  max-width: 834px;
+  margin: 12px auto 0;
+  font-size: 0.875rem;
+  color: var(--tinta-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.nota__aviso {
+  font-weight: 600;
+  color: var(--tinta);
 }

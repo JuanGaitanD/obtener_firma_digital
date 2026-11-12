@@ -13,6 +13,10 @@
           Vacía
         </span>
       }
+      @if (ultimaDescarga) {
+        <span class="sello" aria-hidden="true">{{ ultimaDescarga | uppercase }}</span>
+        <span class="sr-only">Descarga de {{ ultimaDescarga | uppercase }} iniciada</span>
+      }
     </p>
   </div>
 
@@ -32,36 +36,39 @@
   </div>
 
   <div class="hoja__pie">
+    <div class="campo campo--linea">
+      <label for="formato" class="campo__etiqueta">Formato</label>
+      <select id="formato" class="selector" [value]="formato" (change)="formato = $any($event.target).value">
+        <option value="png">PNG · fondo transparente</option>
+        <option value="svg">SVG · vectorial</option>
+      </select>
+    </div>
+
     <button
       type="button"
-      class="boton boton--secundario"
-      (click)="clearCanvas()"
+      class="boton boton--primario boton--descargar"
+      (click)="descargar()"
+      [disabled]="!hasSignature()"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 4v10"/><path d="M8 10.5l4 4 4-4"/><path d="M5 19h14"/></svg>
+      Descargar {{ formato | uppercase }}
+    </button>
+
+    <button
+      type="button"
+      class="boton boton--secundario boton--limpiar"
+      (click)="clearCanvas(); ultimaDescarga = null"
       [disabled]="!hasSignature()"
     >
       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 20h11"/><path d="M5.2 14.2l8.6-8.6a2 2 0 0 1 2.8 0l2.8 2.8a2 2 0 0 1 0 2.8L11.4 20H8.6l-3.4-3.4a2 2 0 0 1 0-2.4z"/><path d="M9.5 10.5l5 5"/></svg>
       Limpiar
     </button>
-
-    <div class="descargas">
-      <button
-        type="button"
-        class="boton boton--primario"
-        (click)="downloadPNG()"
-        [disabled]="!hasSignature()"
-      >
-        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 4v10"/><path d="M8 10.5l4 4 4-4"/><path d="M5 19h14"/></svg>
-        Descargar PNG
-      </button>
-
-      <button
-        type="button"
-        class="boton boton--primario"
-        (click)="downloadSVG()"
-        [disabled]="!hasSignature()"
-      >
-        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 4v10"/><path d="M8 10.5l4 4 4-4"/><path d="M5 19h14"/></svg>
-        Descargar SVG
-      </button>
-    </div>
   </div>
 </section>
+
+<p class="nota">
+  Se guarda como firma-digital-AAAAMMDD-HHMMSS.{{ formato }}
+  @if (ultimaDescarga) {
+    <span class="nota__aviso">· Descarga iniciada, revisa tu carpeta de descargas</span>
+  }
+</p>

@@ -39,6 +39,7 @@
   color: var(--tinta-2);
   margin: 0;
   max-width: 34rem;
+  text-wrap: balance;
 }
 
 .meta {
