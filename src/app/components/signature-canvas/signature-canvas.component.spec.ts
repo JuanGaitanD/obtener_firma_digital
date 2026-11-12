@@ -58,6 +58,25 @@ describe('SignatureCanvasComponent: trazado', () => {
     }
   });
 
+  it('la tinta cae bajo el puntero aunque la página se haya desplazado después de cargar', () => {
+    const relleno = document.createElement('div');
+    relleno.style.height = '4000px';
+    document.body.appendChild(relleno);
+    try {
+      const antes = canvas.getBoundingClientRect();
+      window.scrollTo(0, 120);
+      const r = canvas.getBoundingClientRect();
+      expect(antes.top - r.top).withContext('la página se movió').toBeGreaterThan(50);
+      const k = canvas.width / r.width;
+      const puntos = trazar({ x: r.left + 10, y: r.top + 20 }, { x: r.left + 60, y: r.top + 50 });
+      expect(puntos[0].x).toBeCloseTo(10 * k, 3);
+      expect(puntos[0].y).toBeCloseTo(20 * k, 3);
+    } finally {
+      window.scrollTo(0, 0);
+      relleno.remove();
+    }
+  });
+
   it('ignora los botones secundarios del ratón', () => {
     const r = canvas.getBoundingClientRect();
     canvas.dispatchEvent(new PointerEvent('pointerdown', {

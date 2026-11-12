@@ -17,8 +17,6 @@ export class SignatureCanvasComponent implements AfterViewInit, OnDestroy {
   private isDrawing = false;
   private currentPath: Array<{x: number, y: number}> = [];
   private allPaths: Array<Array<{x: number, y: number}>> = [];
-  
-  private rect!: DOMRect;
 
   constructor(private downloadService: DownloadService) {}
 
@@ -47,11 +45,6 @@ export class SignatureCanvasComponent implements AfterViewInit, OnDestroy {
       this.ctx.lineCap = 'round';
       this.ctx.lineJoin = 'round';
     }
-    this.updateRect();
-  }
-
-  private updateRect(): void {
-    this.rect = this.canvas.getBoundingClientRect();
   }
 
   private setupEventListeners(): void {
@@ -61,8 +54,6 @@ export class SignatureCanvasComponent implements AfterViewInit, OnDestroy {
     this.canvas.addEventListener('pointerup', this.onPointerEnd);
     this.canvas.addEventListener('pointercancel', this.onPointerEnd);
     this.canvas.addEventListener('pointerleave', this.onPointerEnd);
-
-    window.addEventListener('resize', this.onResize);
   }
 
   private removeEventListeners(): void {
@@ -71,21 +62,17 @@ export class SignatureCanvasComponent implements AfterViewInit, OnDestroy {
     this.canvas.removeEventListener('pointerup', this.onPointerEnd);
     this.canvas.removeEventListener('pointercancel', this.onPointerEnd);
     this.canvas.removeEventListener('pointerleave', this.onPointerEnd);
-
-    window.removeEventListener('resize', this.onResize);
-  }
-
-  private onResize = (): void => {
-    this.updateRect();
   }
 
   private getCoordinates(e: PointerEvent): { x: number; y: number } {
-    const scaleX = this.canvas.width / this.rect.width;
-    const scaleY = this.canvas.height / this.rect.height;
+    // Se mide en cada evento: el scroll, el zoom y los cambios de disposición mueven el lienzo
+    const rect = this.canvas.getBoundingClientRect();
+    const scaleX = this.canvas.width / rect.width;
+    const scaleY = this.canvas.height / rect.height;
 
     return {
-      x: (e.clientX - this.rect.left) * scaleX,
-      y: (e.clientY - this.rect.top) * scaleY
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY
     };
   }
 
