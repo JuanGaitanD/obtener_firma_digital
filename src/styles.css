@@ -2,9 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Papel de seguridad con línea de firma: tinta azul-negra de bolígrafo sobre papel secante.
+   Valores en sRGB; el OKLCH de cada papel está en la documentación de diseño. */
 :root {
-  --transition-duration: 300ms;
-  --transition-easing: ease-in-out;
+  /* Color */
+  --mesa: #f8ebeb;             /* oklch(0.95 0.014 15)  papel secante, fondo de la página */
+  --hoja: #fefcfd;             /* oklch(0.994 0.002 15) la hoja, el lienzo, campos y secundario */
+  --tinta: #182233;            /* oklch(0.25 0.035 262) texto principal */
+  --tinta-2: #505c6c;          /* oklch(0.47 0.03 255)  texto secundario */
+  --separador: #e1d6d6;        /* oklch(0.885 0.012 15) filetes internos de la hoja */
+  --borde-campo: #78818c;      /* oklch(0.6 0.02 255)   borde de select y secundario */
+  --linea-firma: #677380;      /* oklch(0.55 0.025 250) línea de firma de la guía */
+  --accion: #2c4072;           /* oklch(0.38 0.09 266)  cara del primario */
+  --accion-hover: #384d81;     /* oklch(0.43 0.09 266)  primario con el cursor */
+  --accion-canto: #14203e;     /* oklch(0.25 0.06 266)  canto del primario */
+  --sobre-accion: #fefcfd;     /* texto sobre la acción */
+  --accion-suave: #e3ebfd;     /* oklch(0.94 0.025 266) estado «lista», hover de secundario y select */
+  --canto-secundario: #b7bec7; /* oklch(0.8 0.015 255)  canto del secundario y del select */
+  --sello: #b63d29;            /* oklch(0.53 0.16 32)   solo la «X», el sello y la «X» del cargador */
+  --sello-suave: #ffe9e4;      /* oklch(0.95 0.025 32)  relleno del sello */
+  --foco: var(--tinta);
+  --deshabilitado: #eae5e5;    /* oklch(0.925 0.006 15) */
+  --sobre-deshabilitado: #5d646c;
+
+  /* Tipografía */
+  --fuente: "Public Sans Variable", system-ui, sans-serif;
+
+  /* Forma y profundidad */
+  --r-hoja: 4px;
+  --r-control: 6px;
+  --r-sello: 999px;
+  --canto: 3px;
+  --sombra-hoja: 0 1px 0 oklch(0.86 0.016 15), 0 14px 32px -14px oklch(0.25 0.035 262 / 0.22);
+
+  /* Movimiento */
+  --rapido: 120ms;
+  --curva: cubic-bezier(.2, .8, .2, 1);
 }
 
 * {
@@ -13,11 +46,189 @@
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  background: var(--mesa);
+  color: var(--tinta);
+  color-scheme: light;
+  font-family: var(--fuente);
+  font-size: 1rem;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: var(--accion-suave);
+  color: var(--tinta);
+}
+
+a, u, ins, abbr[title] {
+  text-decoration: none;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* Foco con teclado: anillo propio, solo :focus-visible, separado del control por el hueco y el canto */
+:where(button, select, a, [tabindex]):focus {
+  outline: none;
+}
+
+:where(button, select, a, [tabindex]):focus-visible {
+  outline: 3px solid var(--foco);
+  outline-offset: calc(var(--canto) + 2px);
+}
+
+@media (forced-colors: active) {
+  :focus-visible {
+    outline-color: Highlight;
+  }
+}
+
+/* Botón con cuerpo: cara, canto que se hunde al pulsar */
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 20px;
+  margin-bottom: var(--canto);
+  border: 1px solid transparent;
+  border-radius: var(--r-control);
+  font: 600 1rem/1 var(--fuente);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--rapido), box-shadow var(--rapido), transform var(--rapido);
+}
+
+.boton svg {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  user-select: none;
+}
+
+.boton--primario {
+  background: var(--accion);
+  color: var(--sobre-accion);
+  box-shadow: 0 var(--canto) 0 0 var(--accion-canto);
+}
+
+.boton--primario:hover:not(:disabled) {
+  background: var(--accion-hover);
+}
+
+.boton--secundario {
+  background: var(--hoja);
+  color: var(--tinta);
+  border-color: var(--borde-campo);
+  box-shadow: 0 var(--canto) 0 0 var(--canto-secundario);
+}
+
+.boton--secundario:hover:not(:disabled) {
+  background: var(--accion-suave);
+}
+
+.boton:active:not(:disabled) {
+  transform: translateY(var(--canto));
+  box-shadow: none;
+}
+
+.boton:disabled {
+  transform: translateY(var(--canto));
+  box-shadow: none;
+  background: var(--deshabilitado);
+  color: var(--sobre-deshabilitado);
+  border-color: transparent;
+  cursor: not-allowed;
+}
+
+/* Campo con etiqueta visible y select dibujado, con respaldo nativo */
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.campo__etiqueta {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--tinta);
+}
+
+.selector {
+  appearance: none;
+  -webkit-appearance: none;
+  min-height: 44px;
+  margin-bottom: var(--canto);
+  padding: 0 40px 0 12px;
+  border: 1px solid var(--borde-campo);
+  border-radius: var(--r-control);
+  background: var(--hoja) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23505c6c' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 8l5 5 5-5'/%3E%3C/svg%3E") no-repeat right 12px center / 20px;
+  box-shadow: 0 var(--canto) 0 0 var(--canto-secundario);
+  font: 400 1rem/1.2 var(--fuente);
+  color: var(--tinta);
+  cursor: pointer;
+  transition: background-color var(--rapido), box-shadow var(--rapido);
+}
+
+.selector:hover {
+  background-color: var(--accion-suave);
+}
+
+@supports (appearance: base-select) {
+  .selector,
+  .selector::picker(select) {
+    appearance: base-select;
+  }
+
+  .selector::picker(select) {
+    border: 1px solid var(--separador);
+    border-radius: var(--r-hoja);
+    background: var(--hoja);
+    box-shadow: var(--sombra-hoja);
+    padding: 4px;
+  }
+
+  .selector option {
+    min-height: 40px;
+    padding: 8px 12px;
+    border-radius: 4px;
+  }
+
+  .selector option:hover,
+  .selector option:focus-visible {
+    background: var(--accion-suave);
+  }
+
+  .selector option:checked {
+    font-weight: 600;
+  }
+
+  .selector::picker-icon {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Heredado: lo usa la plantilla del lienzo hasta el paso 4 */
+:root {
+  --transition-duration: 300ms;
+  --transition-easing: ease-in-out;
 }
 
 @keyframes fadeIn {
