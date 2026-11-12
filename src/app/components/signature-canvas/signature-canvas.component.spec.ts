@@ -85,3 +85,16 @@ describe('SignatureCanvasComponent: trazado', () => {
     expect(fixture.componentInstance.hasSignature()).toBeFalse();
   });
 });
+
+describe('SignatureCanvasComponent: aviso de descarga', () => {
+  it('retira el sello al cambiar de formato para que sello y aviso no se contradigan', () => {
+    const fixture = TestBed.createComponent(SignatureCanvasComponent);
+    fixture.detectChanges();
+    const c = fixture.componentInstance;
+    c.ultimaDescarga = 'svg';
+    c.cambiarFormato('png');
+    fixture.detectChanges();
+    expect(c.ultimaDescarga).toBeNull();
+    expect(fixture.nativeElement.querySelector('.sello')).toBeNull();
+  });
+});

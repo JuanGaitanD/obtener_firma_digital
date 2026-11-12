@@ -48,28 +48,20 @@
   background-color: var(--hoja);
 }
 
+/* El orden del DOM es el orden visual en todos los anchos: Formato, Limpiar, Descargar.
+   Hasta 768 px el select ocupa su propia fila (a 640-767 el texto «PNG · fondo transparente» no cabe junto a los botones). */
 .hoja__pie {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
   gap: 12px;
   padding: 16px 16px 13px; /* 13 + 3 de canto = 16 */
   border-top: 1px solid var(--separador);
 }
 
-/* En 390 px: el select a todo el ancho y debajo Limpiar + Descargar, al alcance del pulgar */
-.campo--linea {
-  grid-column: 1 / -1;
-}
-
-.boton--descargar {
-  grid-column: 2;
-  grid-row: 2;
-}
-
-.boton--limpiar {
-  grid-column: 1;
-  grid-row: 2;
+.hoja__acciones {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
 }
 
 .hoja__pie .boton {
@@ -80,11 +72,11 @@
   width: 100%;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 768px) {
   .hoja__pie {
-    display: flex;
+    flex-direction: row;
     align-items: flex-start;
-    justify-content: flex-end;
+    justify-content: space-between;
   }
 
   .campo--linea {
@@ -101,17 +93,16 @@
     width: auto;
   }
 
+  .hoja__acciones {
+    display: flex;
+  }
+
   .hoja__pie .boton {
     padding-inline: 20px;
   }
 
   .boton--descargar {
     min-width: 172px;
-  }
-
-  .boton--limpiar {
-    order: -1;
-    margin-right: auto;
   }
 }
 
@@ -256,6 +247,10 @@
   font-size: 0.875rem;
   color: var(--tinta-2);
   font-variant-numeric: tabular-nums;
+}
+
+.nota__nombre {
+  white-space: nowrap;
 }
 
 .nota__aviso {

@@ -152,6 +152,12 @@ export class SignatureCanvasComponent implements AfterViewInit, OnDestroy {
   formato: 'png' | 'svg' = 'png';
   ultimaDescarga: 'png' | 'svg' | null = null;
 
+  /** Cambiar el formato retira el sello: el aviso de descarga habla del formato que se descargó. */
+  cambiarFormato(valor: 'png' | 'svg'): void {
+    this.formato = valor;
+    this.ultimaDescarga = null;
+  }
+
   descargar(): void {
     if (this.formato === 'png') this.downloadPNG(); else this.downloadSVG();
     this.ultimaDescarga = this.formato;
