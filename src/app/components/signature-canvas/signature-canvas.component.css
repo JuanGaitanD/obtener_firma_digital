@@ -64,3 +64,108 @@
   align-items: flex-start;
   gap: 8px 12px;
 }
+
+/* Estado visible; el anuncio lo hace la región role="status" */
+.estado {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.2;
+}
+
+.estado__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
+  padding: 0 12px;
+  border-radius: var(--r-sello);
+  color: var(--tinta-2);
+  font-weight: 600;
+  animation: fundido 160ms var(--curva);
+}
+
+.estado__chip--lista {
+  background: var(--accion-suave);
+  color: var(--tinta);
+  padding-left: 8px;
+}
+
+.estado__chip svg {
+  width: 16px;
+  height: 16px;
+  stroke: var(--accion);
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.estado__punto {
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid var(--tinta-2);
+  border-radius: var(--r-sello);
+}
+
+@keyframes fundido {
+  from { opacity: 0; }
+}
+
+/* Guía de firma: fuera del canvas, no se exporta ni intercepta el trazo */
+.guia {
+  position: absolute;
+  inset: 8px 16px 16px;
+  pointer-events: none;
+  user-select: none;
+}
+
+.guia__x,
+.guia__linea,
+.guia__leyenda {
+  position: absolute;
+  top: 72%;
+}
+
+.guia__x {
+  left: 4px;
+  transform: translateY(-100%);
+  padding-bottom: 2px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--sello);
+}
+
+.guia__linea {
+  left: 28px;
+  right: 0;
+  height: 1.5px;
+  background: var(--linea-firma);
+}
+
+.guia__leyenda {
+  left: 28px;
+  margin-top: 6px;
+  font-size: 0.75rem;
+  line-height: 1;
+  color: var(--tinta-2);
+}
+
+.pista {
+  position: absolute;
+  inset: 8px 16px 16px;
+  top: 34%;
+  bottom: auto;
+  margin: 0;
+  padding-inline: 24px;
+  text-align: center;
+  font-size: 1rem;
+  color: var(--tinta-2);
+  pointer-events: none;
+  user-select: none;
+  transition: opacity 180ms var(--curva);
+}
+
+.pista--oculta {
+  opacity: 0;
+}

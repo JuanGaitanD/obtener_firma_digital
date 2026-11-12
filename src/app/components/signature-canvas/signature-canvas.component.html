@@ -1,6 +1,19 @@
 <section class="hoja" aria-labelledby="hoja-titulo">
   <div class="hoja__cabecera">
     <h2 id="hoja-titulo" class="hoja__titulo">Área de firma</h2>
+    <p class="estado" role="status">
+      @if (hasSignature()) {
+        <span class="estado__chip estado__chip--lista">
+          <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4.5 10.5l3.5 3.5 7.5-8"/></svg>
+          Firma lista
+        </span>
+      } @else {
+        <span class="estado__chip">
+          <span class="estado__punto" aria-hidden="true"></span>
+          Vacía
+        </span>
+      }
+    </p>
   </div>
 
   <div class="canvas-wrapper">
@@ -8,9 +21,14 @@
       #canvas
       class="signature-canvas"
       role="img"
-      [attr.aria-label]="'Canvas para dibujar firma digital. ' + (hasSignature() ? 'Firma presente.' : 'Canvas vacío.')"
-      tabindex="0"
+      [attr.aria-label]="'Área de firma. ' + (hasSignature() ? 'Con firma.' : 'Vacía.')"
     ></canvas>
+    <div class="guia" aria-hidden="true">
+      <span class="guia__x">X</span>
+      <span class="guia__linea"></span>
+      <span class="guia__leyenda">Firma</span>
+    </div>
+    <p class="pista" [class.pista--oculta]="hasSignature()" aria-hidden="true">Firma sobre la línea con el ratón, un lápiz o el dedo</p>
   </div>
 
   <div class="hoja__pie">
