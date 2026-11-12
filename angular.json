@@ -27,6 +27,16 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "la-belle-aurore-latin-400-normal.woff",
+                "input": "node_modules/@fontsource/la-belle-aurore/files",
+                "output": "fonts"
+              },
+              {
+                "glob": "LICENSE",
+                "input": "node_modules/@fontsource/la-belle-aurore",
+                "output": "fonts"
               }
             ],
             "styles": [
@@ -86,6 +96,16 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "la-belle-aurore-latin-400-normal.woff",
+                "input": "node_modules/@fontsource/la-belle-aurore/files",
+                "output": "fonts"
+              },
+              {
+                "glob": "LICENSE",
+                "input": "node_modules/@fontsource/la-belle-aurore",
+                "output": "fonts"
               }
             ],
             "styles": [
