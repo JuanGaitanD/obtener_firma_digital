@@ -90,6 +90,18 @@ a, u, ins, abbr[title] {
   }
 }
 
+/* Con :has(), el anillo rodea todo el control de modos (como el del select) y no el segmento suelto */
+@supports selector(:has(*)) {
+  .modos__radio:focus-visible + .modos__opcion {
+    outline: none;
+  }
+
+  .modos:has(.modos__radio:focus-visible) {
+    outline: 3px solid var(--foco);
+    outline-offset: calc(var(--canto) + 2px);
+  }
+}
+
 @media (forced-colors: active) {
   :focus-visible {
     outline-color: Highlight;
