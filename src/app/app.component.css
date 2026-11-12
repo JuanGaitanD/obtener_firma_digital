@@ -56,13 +56,8 @@
   .title {
     font-size: 2.75rem;
   }
-}
 
-@media (min-width: 1024px) {
-  .main-content {
-    padding-inline: 32px;
-  }
-
+  /* Dos columnas desde 768 (no 1024): apilada, la cabecera mide más del 60 % vacía */
   .header {
     flex-direction: row;
     align-items: flex-end;
@@ -71,12 +66,18 @@
   }
 
   .subtitle {
-    max-width: 30rem;
+    max-width: 36rem;
   }
 
   .meta {
     max-width: 15rem;
     text-align: right;
     padding-bottom: 4px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .main-content {
+    padding-inline: 32px;
   }
 }
