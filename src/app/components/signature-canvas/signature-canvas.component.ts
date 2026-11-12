@@ -55,28 +55,23 @@ export class SignatureCanvasComponent implements AfterViewInit, OnDestroy {
   }
 
   private setupEventListeners(): void {
-    this.canvas.addEventListener('mousedown', this.onMouseDown);
-    this.canvas.addEventListener('mousemove', this.onMouseMove);
-    this.canvas.addEventListener('mouseup', this.onMouseUp);
-    this.canvas.addEventListener('mouseleave', this.onMouseUp);
-    
-    this.canvas.addEventListener('touchstart', this.onTouchStart, { passive: false });
-    this.canvas.addEventListener('touchmove', this.onTouchMove, { passive: false });
-    this.canvas.addEventListener('touchend', this.onTouchEnd);
-    
+    // Pointer Events unifican ratón, tacto y lápiz; con touch-action: none el navegador no hace scroll ni zoom
+    this.canvas.addEventListener('pointerdown', this.onPointerDown);
+    this.canvas.addEventListener('pointermove', this.onPointerMove);
+    this.canvas.addEventListener('pointerup', this.onPointerEnd);
+    this.canvas.addEventListener('pointercancel', this.onPointerEnd);
+    this.canvas.addEventListener('pointerleave', this.onPointerEnd);
+
     window.addEventListener('resize', this.onResize);
   }
 
   private removeEventListeners(): void {
-    this.canvas.removeEventListener('mousedown', this.onMouseDown);
-    this.canvas.removeEventListener('mousemove', this.onMouseMove);
-    this.canvas.removeEventListener('mouseup', this.onMouseUp);
-    this.canvas.removeEventListener('mouseleave', this.onMouseUp);
-    
-    this.canvas.removeEventListener('touchstart', this.onTouchStart);
-    this.canvas.removeEventListener('touchmove', this.onTouchMove);
-    this.canvas.removeEventListener('touchend', this.onTouchEnd);
-    
+    this.canvas.removeEventListener('pointerdown', this.onPointerDown);
+    this.canvas.removeEventListener('pointermove', this.onPointerMove);
+    this.canvas.removeEventListener('pointerup', this.onPointerEnd);
+    this.canvas.removeEventListener('pointercancel', this.onPointerEnd);
+    this.canvas.removeEventListener('pointerleave', this.onPointerEnd);
+
     window.removeEventListener('resize', this.onResize);
   }
 
@@ -84,70 +79,51 @@ export class SignatureCanvasComponent implements AfterViewInit, OnDestroy {
     this.updateRect();
   }
 
-  private getCoordinates(e: MouseEvent | TouchEvent): { x: number; y: number } | null {
-    let clientX: number, clientY: number;
-    
-    if (e instanceof TouchEvent) {
-      if (e.touches.length === 0) return null;
-      clientX = e.touches[0].clientX;
-      clientY = e.touches[0].clientY;
-    } else {
-      clientX = e.clientX;
-      clientY = e.clientY;
-    }
-    
+  private getCoordinates(e: PointerEvent): { x: number; y: number } {
     const scaleX = this.canvas.width / this.rect.width;
     const scaleY = this.canvas.height / this.rect.height;
-    
+
     return {
-      x: (clientX - this.rect.left) * scaleX,
-      y: (clientY - this.rect.top) * scaleY
+      x: (e.clientX - this.rect.left) * scaleX,
+      y: (e.clientY - this.rect.top) * scaleY
     };
   }
 
-  private onMouseDown = (e: MouseEvent): void => {
+  private onPointerDown = (e: PointerEvent): void => {
+    // Un solo puntero a la vez (el primero) y, con ratón, solo el botón principal
+    if (!e.isPrimary || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    e.preventDefault();
+    try {
+      // Con captura, el trazo sigue aunque el puntero salga del lienzo
+      this.canvas.setPointerCapture(e.pointerId);
+    } catch {
+      // sin captura (evento sintético): pointerleave termina el trazo
+    }
     this.startDrawing(e);
   }
 
-  private onMouseMove = (e: MouseEvent): void => {
-    this.draw(e);
+  private onPointerMove = (e: PointerEvent): void => {
+    if (e.isPrimary) this.draw(e);
   }
 
-  private onMouseUp = (): void => {
+  private onPointerEnd = (): void => {
     this.stopDrawing();
   }
 
-  private onTouchStart = (e: TouchEvent): void => {
-    e.preventDefault();
-    this.startDrawing(e);
-  }
-
-  private onTouchMove = (e: TouchEvent): void => {
-    e.preventDefault();
-    this.draw(e);
-  }
-
-  private onTouchEnd = (e: TouchEvent): void => {
-    e.preventDefault();
-    this.stopDrawing();
-  }
-
-  private startDrawing(e: MouseEvent | TouchEvent): void {
+  private startDrawing(e: PointerEvent): void {
     const coords = this.getCoordinates(e);
-    if (!coords) return;
-    
+
     this.isDrawing = true;
     this.currentPath = [{ x: coords.x, y: coords.y }];
     this.ctx.beginPath();
     this.ctx.moveTo(coords.x, coords.y);
   }
 
-  private draw(e: MouseEvent | TouchEvent): void {
+  private draw(e: PointerEvent): void {
     if (!this.isDrawing) return;
-    
+
     const coords = this.getCoordinates(e);
-    if (!coords) return;
-    
+
     this.currentPath.push({ x: coords.x, y: coords.y });
     this.ctx.lineTo(coords.x, coords.y);
     this.ctx.stroke();
