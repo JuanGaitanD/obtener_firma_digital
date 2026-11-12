@@ -10,20 +10,16 @@ describe('AppComponent', () => {
 
   it('should create the app', () => {
     const fixture = TestBed.createComponent(AppComponent);
+    // detectChanges inicializa el lienzo; sin él, ngOnDestroy de SignatureCanvasComponent falla al limpiar
+    fixture.detectChanges();
     const app = fixture.componentInstance;
     expect(app).toBeTruthy();
-  });
-
-  it(`should have the 'obtener-firma-digital' title`, () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app.title).toEqual('obtener-firma-digital');
   });
 
   it('should render title', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, obtener-firma-digital');
+    expect(compiled.querySelector('h1')?.textContent).toContain('Firma Digital');
   });
 });
