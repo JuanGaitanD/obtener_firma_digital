@@ -1,4 +1,8 @@
-<div class="signature-container animate-fade-in">
+<section class="hoja" aria-labelledby="hoja-titulo">
+  <div class="hoja__cabecera">
+    <h2 id="hoja-titulo" class="hoja__titulo">Área de firma</h2>
+  </div>
+
   <div class="canvas-wrapper">
     <canvas
       #canvas
@@ -8,38 +12,38 @@
       tabindex="0"
     ></canvas>
   </div>
-  
-  <div class="controls">
+
+  <div class="hoja__pie">
     <button
       type="button"
-      class="btn btn-secondary"
+      class="boton boton--secundario"
       (click)="clearCanvas()"
-      [attr.aria-label]="'Limpiar firma'"
       [disabled]="!hasSignature()"
     >
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 20h11"/><path d="M5.2 14.2l8.6-8.6a2 2 0 0 1 2.8 0l2.8 2.8a2 2 0 0 1 0 2.8L11.4 20H8.6l-3.4-3.4a2 2 0 0 1 0-2.4z"/><path d="M9.5 10.5l5 5"/></svg>
       Limpiar
     </button>
-    
-    <div class="download-buttons">
+
+    <div class="descargas">
       <button
         type="button"
-        class="btn btn-primary"
+        class="boton boton--primario"
         (click)="downloadPNG()"
-        [attr.aria-label]="'Descargar firma como imagen PNG'"
         [disabled]="!hasSignature()"
       >
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 4v10"/><path d="M8 10.5l4 4 4-4"/><path d="M5 19h14"/></svg>
         Descargar PNG
       </button>
-      
+
       <button
         type="button"
-        class="btn btn-primary"
+        class="boton boton--primario"
         (click)="downloadSVG()"
-        [attr.aria-label]="'Descargar firma como imagen SVG'"
         [disabled]="!hasSignature()"
       >
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 4v10"/><path d="M8 10.5l4 4 4-4"/><path d="M5 19h14"/></svg>
         Descargar SVG
       </button>
     </div>
   </div>
-</div>
+</section>

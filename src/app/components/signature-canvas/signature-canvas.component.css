@@ -1,122 +1,66 @@
-.signature-container {
-  width: 100%;
-  max-width: 900px;
+:host {
+  display: block;
+}
+
+/* La hoja: papel sobre la mesa. 832 de interior + 1 px de borde por lado. */
+.hoja {
+  max-width: 834px;
   margin: 0 auto;
-  padding: 1.5rem;
+  background: var(--hoja);
+  border: 1px solid var(--separador);
+  border-radius: var(--r-hoja);
+  box-shadow: var(--sombra-hoja);
 }
 
+.hoja__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 48px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--separador);
+}
+
+.hoja__titulo {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--tinta-2);
+}
+
+/* Padre directo del canvas: padding-inline exacto de 16 px, sin borde ni transform.
+   El tamaño exportado depende de su ancho (setupCanvas resta 32). */
 .canvas-wrapper {
-  background-color: #ffffff;
-  border: 2px solid #e5e7eb;
-  border-radius: 0.5rem;
-  padding: 1rem;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  margin-bottom: 1.5rem;
-  transition: border-color var(--transition-duration, 300ms) var(--transition-easing, ease-in-out);
-}
-
-.canvas-wrapper:focus-within {
-  border-color: #3b82f6;
-  outline: 2px solid transparent;
-  outline-offset: 2px;
+  position: relative;
+  max-width: 832px;
+  padding: 8px 16px 16px;
+  border: 0;
 }
 
 .signature-canvas {
+  display: block;
   width: 100%;
   height: auto;
-  display: block;
   cursor: crosshair;
   touch-action: none;
-  background-color: #ffffff;
-  border-radius: 0.25rem;
+  background-color: var(--hoja);
 }
 
-.signature-canvas:focus {
-  outline: 2px solid #3b82f6;
-  outline-offset: 4px;
-}
-
-.controls {
+.hoja__pie {
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  align-items: stretch;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 16px 16px 13px; /* 13 + 3 de canto = 16 */
+  border-top: 1px solid var(--separador);
 }
 
-.download-buttons {
+.descargas {
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px 12px;
 }
-
-.btn {
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
-  font-size: 1rem;
-  font-weight: 500;
-  border: none;
-  cursor: pointer;
-  transition: all var(--transition-duration, 300ms) var(--transition-easing, ease-in-out);
-  text-align: center;
-  min-height: 44px;
-}
-
-.btn:focus {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
-}
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-primary {
-  background-color: #3b82f6;
-  color: #ffffff;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background-color: #2563eb;
-}
-
-.btn-primary:active:not(:disabled) {
-  background-color: #1d4ed8;
-}
-
-.btn-secondary {
-  background-color: #6b7280;
-  color: #ffffff;
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background-color: #4b5563;
-}
-
-.btn-secondary:active:not(:disabled) {
-  background-color: #374151;
-}
-
-@media (min-width: 640px) {
-  .controls {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .download-buttons {
-    flex-direction: row;
-    gap: 0.75rem;
-  }
-
-  .btn {
-    min-width: 150px;
-  }
-}
-
-@media (min-width: 768px) {
-  .signature-container {
-    padding: 2rem;
-  }
-}
-
