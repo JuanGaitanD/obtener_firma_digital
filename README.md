@@ -4,11 +4,12 @@ Aplicación web desarrollada con Angular 19 que permite crear firmas digitales d
 
 ## Características
 
-- Dibujo de firmas con mouse o pantalla táctil
-- Descarga de firmas en formato PNG (fondo transparente) o SVG (vectorial), a elegir en un selector
-- Diseño de «papel de seguridad con línea de firma», accesible y con foco visible
+- Dos modos, en un control segmentado: **Dibujar** (mouse, lápiz o dedo, también en Firefox de escritorio) y **Escribir** (tu nombre con una tipografía de firma manuscrita, La Belle Aurore, sobre la misma línea de firma, con vista previa en vivo; es la alternativa para quien no puede dibujar con puntero y se opera solo con teclado)
+- Descarga de firmas en formato PNG (fondo transparente) o SVG (vectorial), a elegir en un selector; en el modo Escribir el SVG lleva el nombre convertido a trazados, así que se ve igual sin la tipografía instalada
+- La firma no sale de tu navegador: se genera y se descarga en tu dispositivo (sin analítica ni fuentes de CDN)
+- Diseño de «papel secante con línea de firma», accesible y con foco visible
 - Responsive (adaptable a móviles, tablets y escritorio)
-- Animaciones suaves
+- Animaciones suaves, sin cargador artificial
 - Sin necesidad de login o registro
 
 ## Requisitos
@@ -60,13 +61,19 @@ Los archivos compilados se guardarán en el directorio `dist/`. La compilación 
 ## Uso
 
 1. Abre la aplicación en tu navegador
-2. Dibuja tu firma en el área del canvas usando el mouse o tu dedo (en dispositivos táctiles)
+2. Elige cómo firmar en el control «Dibujar» / «Escribir» (se cambia con clic, tacto o las flechas del teclado):
+   - **Dibujar**: traza tu firma en el área con el mouse, un lápiz o tu dedo
+   - **Escribir**: escribe tu nombre en el campo «Nombre para tu firma» (admite tildes, ñ y nombres largos) y mira cómo queda sobre la línea
 3. Una vez que estés satisfecho con tu firma, puedes:
-   - Hacer clic en "Limpiar" para borrar y empezar de nuevo
+   - Hacer clic en "Limpiar" para borrar lo del modo activo (lo del otro modo se conserva) y empezar de nuevo
    - Elegir el formato en el selector "Formato" (PNG con fondo transparente, o SVG vectorial)
    - Hacer clic en "Descargar" para guardar la firma en el formato elegido
 
-Los archivos descargados se guardarán con un nombre que incluye la fecha y hora: `firma-digital-YYYYMMDD-HHMMSS.png` o `.svg`
+Los archivos descargados se guardarán con un nombre que incluye la fecha y hora: `firma-digital-YYYYMMDD-HHMMSS.png` o `.svg`. El PNG y el SVG de los dos modos tienen el mismo tamaño de lienzo, fondo transparente y tinta `#000000`.
+
+## Navegadores
+
+Objetivo (archivo `.browserslistrc`): Safari e iOS 14 o superior, Chrome y Edge 90 o superior, Firefox 90 o superior y Samsung Internet 15 o superior. Se probó en las versiones recientes de Chromium, Firefox y WebKit; ver `HANDOFF.md` para lo que no se pudo probar.
 
 ## Pruebas
 
@@ -82,7 +89,8 @@ Para correrlas sin abrir ventana (por ejemplo, en CI), Karma necesita Chrome sin
 - TypeScript 5
 - Tailwind CSS 3
 - Public Sans (autoalojada con `@fontsource-variable/public-sans`)
-- HTML5 Canvas API
+- La Belle Aurore (tipografía de firma, OFL-1.1, autoalojada con `@fontsource/la-belle-aurore`) y `opentype.js` para convertir el nombre en trazados (se descargan solo al elegir «Escribir»)
+- HTML5 Canvas API y Pointer Events
 
 ## Estructura del Proyecto
 
@@ -90,10 +98,10 @@ Para correrlas sin abrir ventana (por ejemplo, en CI), Karma necesita Chrome sin
 src/
 ├── app/
 │   ├── components/
-│   │   ├── signature-canvas/    # Componente principal del canvas de dibujo
-│   │   └── loader/              # Componente de carga
+│   │   └── signature-canvas/    # Componente principal: modos dibujar y escribir, estado, descarga
 │   ├── services/
-│   │   └── download.service.ts  # Servicio para descargar firmas
+│   │   ├── download.service.ts        # Servicio para descargar firmas (PNG y SVG)
+│   │   └── text-signature.service.ts  # Carga diferida de la fuente y conversión del nombre a trazados
 │   ├── app.component.ts         # Componente raíz
 │   └── app.config.ts            # Configuración de la aplicación
 ├── styles.css                   # Estilos globales con Tailwind
@@ -103,7 +111,8 @@ src/
 ## Accesibilidad
 
 La aplicación incluye:
-- Etiquetas ARIA para lectores de pantalla y una región de estado («Vacía», «Firma lista»)
+- Etiquetas ARIA para lectores de pantalla y una región de estado («Vacía», «Firma lista») que vale para los dos modos
+- Alternativa a dibujar: escribir el nombre, con teclado y lector de pantalla
 - Navegación por teclado con anillo de foco doble
 - Movimiento reducido respetado (`prefers-reduced-motion`)
 - Contraste adecuado (WCAG AA)
