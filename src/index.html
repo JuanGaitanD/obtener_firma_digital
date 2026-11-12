@@ -6,6 +6,9 @@
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f8ebeb">
+  <!-- La fuente llega después de medir el lienzo y puede cambiar el alto de la cabecera:
+       un resize hace que el lienzo vuelva a medir su posición (onResize solo actualiza el rect). -->
+  <script>document.fonts.addEventListener("loadingdone", function () { window.dispatchEvent(new Event("resize")); });</script>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 <body>
