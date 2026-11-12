@@ -70,11 +70,12 @@ a, u, ins, abbr[title] {
 }
 
 /* Foco con teclado: anillo propio, solo :focus-visible, separado del control por el hueco y el canto */
-:where(button, select, a, [tabindex]):focus {
+:where(button, select, input, a, [tabindex]):focus {
   outline: none;
 }
 
-:where(button, select, a, [tabindex]):focus-visible {
+:where(button, select, input, a, [tabindex]):focus-visible,
+.modos__radio:focus-visible + .modos__opcion {
   outline: 3px solid var(--foco);
   outline-offset: calc(var(--canto) + 2px);
 }
@@ -215,6 +216,100 @@ a, u, ins, abbr[title] {
 
   .selector::picker-icon {
     display: none;
+  }
+}
+
+/* Campo de texto: hundido en la hoja (el canto del select y de los botones sale; este entra) */
+.entrada {
+  width: 100%;
+  min-height: 44px;
+  padding: 9px 12px;
+  border: 1px solid var(--borde-campo);
+  border-radius: var(--r-control);
+  background: var(--hoja);
+  box-shadow: inset 0 2px 0 0 var(--separador);
+  font: 400 1rem/1.5 var(--fuente);
+  color: var(--tinta);
+}
+
+.entrada::placeholder {
+  color: var(--tinta-2);
+  opacity: 1;
+}
+
+.entrada:focus-visible {
+  outline-offset: 2px;
+}
+
+/* Control de dos modos, segmentado y con cuerpo. Radios nativos: teclado (Tab entra, flechas cambian) y lector de pantalla gratis. */
+.modos {
+  display: flex;
+  min-width: 0;
+  margin: 0;
+  padding: 3px;
+  border: 1px solid var(--borde-campo);
+  border-radius: var(--r-control);
+  background: var(--hoja);
+  box-shadow: 0 var(--canto) 0 0 var(--canto-secundario);
+}
+
+.modos__radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+}
+
+.modos__opcion {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 3px;
+  font: 600 0.875rem/1 var(--fuente);
+  white-space: nowrap;
+  color: var(--tinta);
+  cursor: pointer;
+  user-select: none;
+  transition: background-color var(--rapido), color var(--rapido);
+}
+
+.modos__opcion svg {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.modos__radio:checked + .modos__opcion {
+  background: var(--accion);
+  color: var(--sobre-accion);
+  box-shadow: inset 0 -2px 0 0 var(--accion-canto);
+}
+
+.modos__radio:not(:checked) + .modos__opcion:hover {
+  background: var(--accion-suave);
+}
+
+@media (pointer: coarse) {
+  .modos__opcion {
+    min-height: 44px;
+  }
+}
+
+@media (forced-colors: active) {
+  .modos__radio:checked + .modos__opcion {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
   }
 }
 

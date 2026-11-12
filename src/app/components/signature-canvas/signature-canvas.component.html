@@ -1,6 +1,19 @@
 <section class="hoja" aria-labelledby="hoja-titulo">
   <div class="hoja__cabecera">
     <h2 id="hoja-titulo" class="hoja__titulo">Área de firma</h2>
+    <fieldset class="modos">
+      <legend class="sr-only">Cómo firmar</legend>
+      <input type="radio" name="modo" id="modo-dibujar" class="modos__radio" value="dibujar" [checked]="modo === 'dibujar'" (change)="cambiarModo('dibujar')">
+      <label for="modo-dibujar" class="modos__opcion">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19l-4 1z"/><path d="M14.5 6.5l3 3"/></svg>
+        Dibujar
+      </label>
+      <input type="radio" name="modo" id="modo-escribir" class="modos__radio" value="escribir" [checked]="modo === 'escribir'" (change)="cambiarModo('escribir')">
+      <label for="modo-escribir" class="modos__opcion">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 7V5h14v2"/><path d="M12 5v14"/><path d="M9 19h6"/></svg>
+        Escribir
+      </label>
+    </fieldset>
     <p class="estado" role="status">
       @if (hasSignature()) {
         <span class="estado__chip estado__chip--lista">
@@ -24,6 +37,7 @@
     <canvas
       #canvas
       class="signature-canvas"
+      [class.signature-canvas--oculto]="modo === 'escribir'"
       role="img"
       [attr.aria-label]="'Área de firma. ' + (hasSignature() ? 'Con firma.' : 'Vacía.')"
     ></canvas>
@@ -32,7 +46,28 @@
       <span class="guia__linea"></span>
       <span class="guia__leyenda">Firma</span>
     </div>
-    <p class="pista" [class.pista--oculta]="hasSignature()" aria-hidden="true">Firma sobre la línea con el ratón, un lápiz o el dedo</p>
+    @if (modo === 'escribir') {
+      <svg class="vista" [attr.viewBox]="viewBox" aria-hidden="true" focusable="false"><path [attr.d]="vista" fill="#000000"/></svg>
+      <div class="escritura">
+        <label for="nombre" class="campo__etiqueta">Nombre para tu firma</label>
+        <input
+          id="nombre"
+          type="text"
+          class="entrada"
+          [value]="nombre"
+          (input)="escribir($any($event.target).value)"
+          placeholder="Tu nombre y apellido"
+          maxlength="60"
+          autocomplete="name"
+          autocapitalize="words"
+          spellcheck="false"
+        >
+        @if (errorFuente) {
+          <p class="escritura__error" role="alert">No se pudo cargar la tipografía de la firma. Recarga la página o usa «Dibujar».</p>
+        }
+      </div>
+    }
+    <p class="pista" [class.pista--oculta]="modo === 'escribir' || hasSignature()" aria-hidden="true">Firma sobre la línea con el ratón, un lápiz o el dedo</p>
   </div>
 
   <div class="hoja__pie">
@@ -48,7 +83,7 @@
       <button
         type="button"
         class="boton boton--secundario"
-        (click)="clearCanvas(); ultimaDescarga = null"
+        (click)="limpiar()"
         [disabled]="!hasSignature()"
       >
         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 20h11"/><path d="M5.2 14.2l8.6-8.6a2 2 0 0 1 2.8 0l2.8 2.8a2 2 0 0 1 0 2.8L11.4 20H8.6l-3.4-3.4a2 2 0 0 1 0-2.4z"/><path d="M9.5 10.5l5 5"/></svg>

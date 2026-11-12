@@ -23,12 +23,7 @@ export class DownloadService {
   }
 
   downloadAsSVG(canvas: HTMLCanvasElement, paths: Array<{x: number, y: number}[]>): void {
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    const width = canvas.width;
-    const height = canvas.height;
-    svg.setAttribute('width', width.toString());
-    svg.setAttribute('height', height.toString());
-    svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    const svg = this.crearSVG(canvas.width, canvas.height);
 
     paths.forEach(path => {
       if (path.length < 2) return;
@@ -49,6 +44,28 @@ export class DownloadService {
       svg.appendChild(pathElement);
     });
 
+    this.guardarSVG(svg);
+  }
+
+  /** Firma escrita: el texto ya viene convertido a trazados (`d`), así no depende de ninguna fuente. */
+  downloadTextAsSVG(width: number, height: number, d: string): void {
+    const svg = this.crearSVG(width, height);
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', d);
+    path.setAttribute('fill', '#000000');
+    svg.appendChild(path);
+    this.guardarSVG(svg);
+  }
+
+  private crearSVG(width: number, height: number): SVGSVGElement {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', width.toString());
+    svg.setAttribute('height', height.toString());
+    svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    return svg;
+  }
+
+  private guardarSVG(svg: SVGSVGElement): void {
     const svgData = new XMLSerializer().serializeToString(svg);
     const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
     const url = URL.createObjectURL(blob);

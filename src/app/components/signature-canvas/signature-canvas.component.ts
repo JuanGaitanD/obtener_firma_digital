@@ -1,6 +1,8 @@
 import { Component, ElementRef, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DownloadService } from '../../services/download.service';
+import { TextSignatureService } from '../../services/text-signature.service';
+import type { Font, Path } from 'opentype.js/dist/opentype.mjs';
 
 @Component({
   selector: 'app-signature-canvas',
@@ -18,7 +20,17 @@ export class SignatureCanvasComponent implements AfterViewInit, OnDestroy {
   private currentPath: Array<{x: number, y: number}> = [];
   private allPaths: Array<Array<{x: number, y: number}>> = [];
 
-  constructor(private downloadService: DownloadService) {}
+  // Firma escrita: lo dibujado y lo escrito conviven; el modo solo decide cuál se ve y cuál se exporta
+  modo: 'dibujar' | 'escribir' = 'dibujar';
+  nombre = '';
+  /** Trazado del nombre para la vista previa (coordenadas del lienzo); vacío si no hay nada que mostrar. */
+  vista = '';
+  viewBox = '';
+  errorFuente = false;
+  private fuente?: Font;
+  private trazadosTexto: Path[] = [];
+
+  constructor(private downloadService: DownloadService, private textoService: TextSignatureService) {}
 
   ngAfterViewInit(): void {
     this.canvas = this.canvasRef.nativeElement;
@@ -132,12 +144,16 @@ export class SignatureCanvasComponent implements AfterViewInit, OnDestroy {
   }
 
   downloadPNG(): void {
-    if (this.allPaths.length === 0 && this.currentPath.length === 0) return;
-    this.downloadService.downloadAsPNG(this.canvas);
+    if (!this.hasSignature()) return;
+    this.downloadService.downloadAsPNG(this.modo === 'escribir' ? this.lienzoDeTexto() : this.canvas);
   }
 
   downloadSVG(): void {
-    if (this.allPaths.length === 0 && this.currentPath.length === 0) return;
+    if (!this.hasSignature()) return;
+    if (this.modo === 'escribir') {
+      this.downloadService.downloadTextAsSVG(this.canvas.width, this.canvas.height, this.vista);
+      return;
+    }
     const pathsToExport = [...this.allPaths];
     if (this.currentPath.length > 0) {
       pathsToExport.push([...this.currentPath]);
@@ -145,8 +161,55 @@ export class SignatureCanvasComponent implements AfterViewInit, OnDestroy {
     this.downloadService.downloadAsSVG(this.canvas, pathsToExport);
   }
 
+  /** El estado vale para el modo activo: «Vacía» / «Firma lista». */
   hasSignature(): boolean {
+    return this.modo === 'escribir' ? this.vista !== '' : this.hayTrazos();
+  }
+
+  private hayTrazos(): boolean {
     return this.allPaths.length > 0 || this.currentPath.length > 0;
+  }
+
+  /** Lienzo temporal del mismo tamaño que el de dibujo, transparente, con el nombre en tinta #000000. */
+  private lienzoDeTexto(): HTMLCanvasElement {
+    const lienzo = document.createElement('canvas');
+    lienzo.width = this.canvas.width;
+    lienzo.height = this.canvas.height;
+    const ctx = lienzo.getContext('2d')!;
+    this.trazadosTexto.forEach((t) => t.draw(ctx));
+    return lienzo;
+  }
+
+  cambiarModo(modo: 'dibujar' | 'escribir'): void {
+    this.modo = modo;
+    this.ultimaDescarga = null;
+    this.viewBox = `0 0 ${this.canvas.width} ${this.canvas.height}`;
+    if (modo === 'escribir' && !this.fuente) {
+      this.textoService.cargar().then(
+        (f) => { this.fuente = f; this.errorFuente = false; this.recalcular(); },
+        () => { this.errorFuente = true; },
+      );
+    }
+  }
+
+  escribir(valor: string): void {
+    this.nombre = valor;
+    this.ultimaDescarga = null;
+    this.recalcular();
+  }
+
+  private recalcular(): void {
+    if (!this.fuente) return;
+    const { width, height } = this.canvas;
+    this.trazadosTexto = this.textoService.disponer(this.fuente, this.nombre, width, height);
+    this.vista = this.trazadosTexto.map((t) => t.toPathData(2)).join(' ');
+  }
+
+  /** Limpiar borra lo del modo activo; lo del otro modo se conserva. */
+  limpiar(): void {
+    if (this.modo === 'escribir') this.escribir('');
+    else this.clearCanvas();
+    this.ultimaDescarga = null;
   }
 
   formato: 'png' | 'svg' = 'png';

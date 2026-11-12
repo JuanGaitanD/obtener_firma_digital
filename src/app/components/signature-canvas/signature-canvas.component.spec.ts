@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SignatureCanvasComponent } from './signature-canvas.component';
 import { DownloadService } from '../../services/download.service';
+import { TextSignatureService } from '../../services/text-signature.service';
 
 type Punto = { x: number; y: number };
 
@@ -96,5 +97,100 @@ describe('SignatureCanvasComponent: aviso de descarga', () => {
     fixture.detectChanges();
     expect(c.ultimaDescarga).toBeNull();
     expect(fixture.nativeElement.querySelector('.sello')).toBeNull();
+  });
+});
+
+describe('SignatureCanvasComponent: escribir el nombre', () => {
+  let fixture: ComponentFixture<SignatureCanvasComponent>;
+  let c: SignatureCanvasComponent;
+  let canvas: HTMLCanvasElement;
+  let descargas: DownloadService;
+
+  async function escribir(nombre: string): Promise<void> {
+    c.cambiarModo('escribir');
+    await TestBed.inject(TextSignatureService).cargar();
+    c.escribir(nombre);
+    fixture.detectChanges();
+  }
+
+  beforeEach(() => {
+    descargas = TestBed.inject(DownloadService);
+    spyOn(descargas, 'downloadAsPNG');
+    spyOn(descargas, 'downloadAsSVG');
+    spyOn(descargas, 'downloadTextAsSVG');
+    fixture = TestBed.createComponent(SignatureCanvasComponent);
+    fixture.detectChanges();
+    c = fixture.componentInstance;
+    canvas = fixture.nativeElement.querySelector('canvas');
+  });
+
+  it('sin nombre escrito no descarga una firma vacía', async () => {
+    await escribir('   ');
+    expect(c.hasSignature()).toBeFalse();
+    c.downloadPNG();
+    c.downloadSVG();
+    expect(descargas.downloadAsPNG).not.toHaveBeenCalled();
+    expect(descargas.downloadTextAsSVG).not.toHaveBeenCalled();
+  });
+
+  it('exporta el nombre (con tildes y ñ) en un lienzo del mismo tamaño, transparente y en tinta negra', async () => {
+    await escribir('José Ñandú Íñiguez');
+    expect(c.hasSignature()).toBeTrue();
+
+    c.downloadPNG();
+    const exportado = (descargas.downloadAsPNG as jasmine.Spy).calls.mostRecent().args[0] as HTMLCanvasElement;
+    expect([exportado.width, exportado.height]).toEqual([canvas.width, canvas.height]);
+    const px = exportado.getContext('2d')!.getImageData(0, 0, exportado.width, exportado.height).data;
+    let opacos = 0;
+    for (let i = 0; i < px.length; i += 4) {
+      if (px[i + 3] === 255) { opacos++; expect([px[i], px[i + 1], px[i + 2]]).toEqual([0, 0, 0]); }
+    }
+    expect(opacos).toBeGreaterThan(200);
+    expect(px[3]).withContext('esquina transparente').toBe(0);
+
+    c.downloadSVG();
+    const [ancho, alto, d] = (descargas.downloadTextAsSVG as jasmine.Spy).calls.mostRecent().args;
+    expect([ancho, alto]).toEqual([canvas.width, canvas.height]);
+    expect(d).toMatch(/^M/);
+    expect(d.length).toBeGreaterThan(500);
+  });
+
+  it('un nombre largo cabe entero en el lienzo, en una o dos líneas', async () => {
+    const servicio = TestBed.inject(TextSignatureService);
+    const fuente = await servicio.cargar();
+    const nombre = 'María Fernanda de los Ángeles Rodríguez Hernández de la Peña';
+    for (const [ancho, alto] of [[800, 450], [324, 213], [274, 183]]) {
+      const trazados = servicio.disponer(fuente, nombre, ancho, alto);
+      expect(trazados.length).withContext(`${ancho}x${alto}`).toBeGreaterThan(0);
+      for (const t of trazados) {
+        const b = t.getBoundingBox();
+        expect(b.x1).toBeGreaterThanOrEqual(0);
+        expect(b.x2).toBeLessThanOrEqual(ancho);
+        expect(b.y1).toBeGreaterThanOrEqual(0);
+        expect(b.y2).toBeLessThanOrEqual(alto);
+      }
+    }
+  });
+
+  it('Limpiar borra el texto del modo activo y conserva lo dibujado; cambiar de modo no pierde nada', async () => {
+    const r = canvas.getBoundingClientRect();
+    canvas.dispatchEvent(puntero('pointerdown', r.left + 10, r.top + 10));
+    canvas.dispatchEvent(puntero('pointermove', r.left + 80, r.top + 60));
+    canvas.dispatchEvent(puntero('pointerup', r.left + 80, r.top + 60));
+    expect(c.hasSignature()).toBeTrue();
+
+    await escribir('Ana');
+    expect(c.hasSignature()).toBeTrue();
+    c.cambiarModo('dibujar');
+    expect(c.hasSignature()).withContext('lo dibujado sigue ahí').toBeTrue();
+    c.cambiarModo('escribir');
+    expect(c.nombre).withContext('lo escrito sigue ahí').toBe('Ana');
+    expect(c.hasSignature()).toBeTrue();
+
+    c.limpiar();
+    expect(c.nombre).toBe('');
+    expect(c.hasSignature()).toBeFalse();
+    c.cambiarModo('dibujar');
+    expect(c.hasSignature()).withContext('Limpiar en «Escribir» no borra el dibujo').toBeTrue();
   });
 });
