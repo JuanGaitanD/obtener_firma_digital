@@ -69,8 +69,7 @@
   background-color: var(--hoja);
 }
 
-/* El orden del DOM es el orden visual en todos los anchos: Formato, Limpiar, Descargar.
-   Hasta 768 px el select ocupa su propia fila (a 640-767 el texto «PNG · fondo transparente» no cabe junto a los botones). */
+/* La firma escrita ocupa el sitio del lienzo, que sigue ahí (misma altura) pero sin verse */
 .signature-canvas--oculto {
   visibility: hidden;
 }
@@ -103,6 +102,8 @@
   color: var(--tinta);
 }
 
+/* El orden del DOM es el orden visual en todos los anchos: Formato, Limpiar, Descargar.
+   Hasta 768 px el select ocupa su propia fila (a 640-767 el texto «PNG · fondo transparente» no cabe junto a los botones). */
 .hoja__pie {
   display: flex;
   flex-direction: column;
