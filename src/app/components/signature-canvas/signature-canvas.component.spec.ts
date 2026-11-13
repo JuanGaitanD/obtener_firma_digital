@@ -319,7 +319,7 @@ describe('SignatureCanvasComponent: copiar como PNG', () => {
     boton()!.click();
     await fixture.whenStable();
     fixture.detectChanges();
-    expect(aviso()).toContain('Firma copiada como imagen PNG');
+    expect(aviso()).toContain('Copiada al portapapeles como PNG');
     expect(boton()!.querySelector('.boton__listo')).withContext('el icono del botón pasa a check').not.toBeNull();
     expect(boton()!.textContent!.trim()).withContext('el nombre del botón no cambia').toBe('Copiar como PNG');
     expect(fixture.nativeElement.querySelector('.sello')).toBeNull();
@@ -398,6 +398,7 @@ describe('SignatureCanvasComponent: copiar como PNG', () => {
     it('sin ClipboardItem', () => { montar({ item: undefined }); expect(boton()).toBeUndefined(); });
     it('con ClipboardItem.supports(image/png) en false', () => { montar({ item: falsoItem(() => false) }); expect(boton()).toBeUndefined(); });
     it('con supports en true sí aparece', () => { montar({ item: falsoItem((t) => t === 'image/png') }); expect(boton()).toBeDefined(); });
+    it('sin ClipboardItem.supports (Safari 13.1–17.3) sí aparece', () => { const Item = falsoItem(() => true) as any; delete Item.supports; montar({ item: Item }); expect(Item.supports).toBeUndefined(); expect(boton()).toBeDefined(); });
     it('sin contexto seguro', () => {
       spyOnProperty(window, 'isSecureContext', 'get').and.returnValue(false);
       montar();
