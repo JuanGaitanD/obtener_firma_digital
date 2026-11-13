@@ -1,6 +1,6 @@
 # HANDOFF · Firma Digital
 
-Estado del trabajo (rama `design/ronda-2`, segunda ronda sobre el rediseño de `design/disenojg`, que ya está en `main` y publicado en GitHub Pages).
+Estado del trabajo. La segunda ronda (rama `design/ronda-2`, sobre el rediseño de `design/disenojg`) se integró en `main` por avance rápido y se publicó en GitHub Pages el 2026-11-12.
 
 ## Dónde estamos
 
@@ -23,6 +23,7 @@ La ronda 2 añadió, por decisión de Juan:
 - El nombre se convierte en **trazados** (`Path` de opentype). Esos mismos trazados alimentan la vista previa (un `<svg>` con el mismo `viewBox` que el lienzo, por encima de él), el **PNG** (lienzo temporal del mismo tamaño que el de dibujo, transparente, relleno `#000000`) y el **SVG** (un `<path fill="#000000">`). Como el SVG lleva `<path>` y no `<text>`, se ve igual en cualquier visor sin la fuente instalada. No se usa `document.fonts.load` ni `fillText`: la fuente solo se lee como binario, así que el PNG no depende del motor de texto del navegador.
 - Un nombre largo se reduce para caber (margen del 6 %) y, si queda muy pequeño, pasa a dos líneas por el espacio más cercano a la mitad. Caben tildes y ñ (todos los acentos del español están en el subconjunto `latin`); los caracteres sin glifo se descartan. Campo con `maxlength="60"`.
 - **Limpiar** borra lo del modo activo; lo del otro modo se conserva. Cambiar de modo no pierde ni lo dibujado ni lo escrito. «Descargar» se habilita con la firma del modo activo; sin nombre no descarga.
+- El SVG y la vista previa se escriben con `datosDeTrazado()` (en el mismo servicio), que serializa los comandos del trazado con dos decimales. **No uses `Path.toPathData(2)`**: en opentype.js 2.0.0 devuelve `NaN` con valores como `269.00000000000006` y la firma sale cortada (le pasaba a 13 de 30 nombres comunes a 1440 px). Lo cubre la prueba «el SVG de un nombre no se corta».
 - Se usa `opentype.js/dist/opentype.mjs` (la entrada `browser` del paquete apunta al UMD y Angular avisaba de que no es ESM) y `src/opentype.d.ts` declara solo lo que se usa (la 2.0.0 no trae tipos).
 
 ## Cómo verificar
@@ -68,6 +69,10 @@ Respaldos añadidos o comprobados:
 2. ¿Se añade escribir el nombre y generar la firma? **Sí.** Una sola tipografía (La Belle Aurore); ofrecer dos o tres estilos en un `select` quedó fuera para no complicar.
 3. ¿Se puede afirmar que la firma no sale del navegador? **Sí**, con la frase de arriba. Se comprobó que en un recorrido completo (cargar, dibujar, escribir, descargar PNG y SVG en los dos modos) todas las peticiones van al propio origen: HTML, JS, CSS, Public Sans, favicon, el chunk de opentype y la fuente de la firma. Ni CDN de fuentes ni analítica.
 4. ¿Se corrigen los dos fallos de origen del trazado? **Sí**, los dos.
+
+## Revisión independiente de la ronda 2 (2026-11-12)
+
+Veredicto: apto con correcciones, ya aplicadas: la firma escrita salía cortada en la vista previa y el SVG por el redondeo de opentype.js (bloqueante; ahora 0 de 30 nombres fallan y el SVG tiene la misma tinta que el PNG en Chromium, Firefox y WebKit) y faltaba un espacio entre el nombre de archivo y el aviso de descarga. Pasan build, Karma (12 de 12), la línea base del dibujo, el trazado (desvío de 0,2 px o menos tras scroll y zoom en los tres motores; Firefox de escritorio firma con ratón) y la privacidad (solo peticiones al propio origen). P3 abiertos: la licencia OFL de La Belle Aurore se publica junto a la fuente pero no está copiada en el repo; el favicon se distingue poco sobre pestaña oscura; un comentario fuera de sitio en el CSS del componente. `npm audit` da avisos de Angular que ya estaban en `main`; ninguno viene de las dependencias nuevas.
 
 ## Qué queda pendiente
 
