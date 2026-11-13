@@ -30,7 +30,9 @@ export class SignatureCanvasComponent implements AfterViewInit, OnDestroy {
   private fuente?: Font;
   private trazadosTexto: Path[] = [];
 
-  constructor(private downloadService: DownloadService, private textoService: TextSignatureService) {}
+  constructor(private downloadService: DownloadService, private textoService: TextSignatureService) {
+    this.puedeCopiar = downloadService.copiaDisponible();
+  }
 
   ngAfterViewInit(): void {
     this.canvas = this.canvasRef.nativeElement;
@@ -183,6 +185,7 @@ export class SignatureCanvasComponent implements AfterViewInit, OnDestroy {
   cambiarModo(modo: 'dibujar' | 'escribir'): void {
     this.modo = modo;
     this.ultimaDescarga = null;
+    this.copia = null;
     this.viewBox = `0 0 ${this.canvas.width} ${this.canvas.height}`;
     if (modo === 'escribir' && !this.fuente) {
       this.textoService.cargar().then(
@@ -195,6 +198,7 @@ export class SignatureCanvasComponent implements AfterViewInit, OnDestroy {
   escribir(valor: string): void {
     this.nombre = valor;
     this.ultimaDescarga = null;
+    this.copia = null;
     this.recalcular();
   }
 
@@ -210,6 +214,7 @@ export class SignatureCanvasComponent implements AfterViewInit, OnDestroy {
     if (this.modo === 'escribir') this.escribir('');
     else this.clearCanvas();
     this.ultimaDescarga = null;
+    this.copia = null;
   }
 
   formato: 'png' | 'svg' = 'png';
@@ -219,10 +224,28 @@ export class SignatureCanvasComponent implements AfterViewInit, OnDestroy {
   cambiarFormato(valor: 'png' | 'svg'): void {
     this.formato = valor;
     this.ultimaDescarga = null;
+    this.copia = null;
   }
 
   descargar(): void {
     if (this.formato === 'png') this.downloadPNG(); else this.downloadSVG();
     this.ultimaDescarga = this.formato;
+    this.copia = null;
+  }
+
+  /** El botón «Copiar como PNG» solo existe si el navegador sabe copiar imágenes. */
+  readonly puedeCopiar: boolean;
+  /** Resultado de la última copia; se retira con cualquier otra acción para no contradecir el sello ni el formato. */
+  copia: 'ok' | 'error' | null = null;
+
+  /** Llamado directamente por el clic: `clipboard.write` tiene que salir de este mismo turno (Safari). */
+  copiar(): void {
+    if (!this.puedeCopiar || !this.hasSignature()) return;
+    this.ultimaDescarga = null;
+    this.copia = null;
+    this.downloadService.copiarPNG(this.modo === 'escribir' ? this.lienzoDeTexto() : this.canvas).then(
+      () => { this.copia = 'ok'; },
+      () => { this.copia = 'error'; },
+    );
   }
 }

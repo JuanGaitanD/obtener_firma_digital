@@ -102,8 +102,8 @@
   color: var(--tinta);
 }
 
-/* El orden del DOM es el orden visual en todos los anchos: Formato, Limpiar, Descargar.
-   Hasta 768 px el select ocupa su propia fila (a 640-767 el texto «PNG · fondo transparente» no cabe junto a los botones). */
+/* El orden del DOM es el orden visual en todos los anchos: Formato, Limpiar, Copiar, Descargar.
+   Hasta 880 px el select ocupa su propia fila: con tres botones, a menos ancho no caben junto a él. */
 .hoja__pie {
   display: flex;
   flex-direction: column;
@@ -122,11 +122,28 @@
   padding-inline: 16px;
 }
 
+/* Con «Copiar como PNG» el móvil usa dos filas: Limpiar y Copiar, y Descargar a todo el ancho */
+.hoja__acciones--copia .boton--descargar {
+  grid-column: 1 / -1;
+}
+
 .campo--linea .selector {
   width: 100%;
 }
 
-@media (min-width: 768px) {
+/* Desde 600 px los botones van en una fila, pegados a la derecha */
+@media (min-width: 600px) {
+  .hoja__acciones {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .hoja__acciones--copia .boton--descargar {
+    grid-column: auto;
+  }
+}
+
+@media (min-width: 880px) {
   .hoja__pie {
     flex-direction: row;
     align-items: flex-start;
@@ -145,18 +162,6 @@
 
   .campo--linea .selector {
     width: auto;
-  }
-
-  .hoja__acciones {
-    display: flex;
-  }
-
-  .hoja__pie .boton {
-    padding-inline: 20px;
-  }
-
-  .boton--descargar {
-    min-width: 172px;
   }
 }
 

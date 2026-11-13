@@ -22,6 +22,29 @@ export class DownloadService {
     }, 'image/png');
   }
 
+  /** ¿Puede este navegador copiar una imagen al portapapeles? Si no, la interfaz no ofrece el botón. */
+  copiaDisponible(): boolean {
+    return window.isSecureContext
+      && !!navigator.clipboard?.write
+      && typeof ClipboardItem !== 'undefined'
+      && ClipboardItem.supports?.('image/png') !== false;
+  }
+
+  /**
+   * Copia el lienzo como PNG, la misma imagen que descarga `downloadAsPNG`.
+   * Safari e iOS exigen que `clipboard.write` se llame de forma síncrona dentro del gesto del usuario y que el
+   * blob llegue como promesa dentro del `ClipboardItem`: por eso no hay ningún `await` antes de la llamada.
+   */
+  copiarPNG(canvas: HTMLCanvasElement): Promise<void> {
+    const blob = new Promise<Blob>((ok, no) =>
+      canvas.toBlob((b) => (b ? ok(b) : no(new Error('El lienzo no produjo imagen'))), 'image/png'));
+    try {
+      return navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  }
+
   downloadAsSVG(canvas: HTMLCanvasElement, paths: Array<{x: number, y: number}[]>): void {
     const svg = this.crearSVG(canvas.width, canvas.height);
 
