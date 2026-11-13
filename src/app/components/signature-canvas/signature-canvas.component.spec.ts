@@ -320,6 +320,8 @@ describe('SignatureCanvasComponent: copiar como PNG', () => {
     await fixture.whenStable();
     fixture.detectChanges();
     expect(aviso()).toContain('Firma copiada como imagen PNG');
+    expect(boton()!.querySelector('.boton__listo')).withContext('el icono del botón pasa a check').not.toBeNull();
+    expect(boton()!.textContent!.trim()).withContext('el nombre del botón no cambia').toBe('Copiar como PNG');
     expect(fixture.nativeElement.querySelector('.sello')).toBeNull();
   });
 
