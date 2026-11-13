@@ -212,3 +212,203 @@ describe('SignatureCanvasComponent: escribir el nombre', () => {
     expect(c.hasSignature()).withContext('Limpiar en «Escribir» no borra el dibujo').toBeTrue();
   });
 });
+
+describe('SignatureCanvasComponent: copiar como PNG', () => {
+  let fixture: ComponentFixture<SignatureCanvasComponent>;
+  let c: SignatureCanvasComponent;
+  let escritura: jasmine.Spy;
+  const original = { clipboard: Object.getOwnPropertyDescriptor(navigator, 'clipboard'), item: (window as any).ClipboardItem };
+
+  /** ClipboardItem de pega: guarda lo que recibe, con `supports` configurable. */
+  function falsoItem(supports?: (t: string) => boolean) {
+    return class { constructor(public datos: Record<string, Promise<Blob>>) {} static supports = supports; };
+  }
+
+  function montar(opciones: { clipboard?: unknown; item?: unknown } = {}) {
+    const clipboard = 'clipboard' in opciones ? opciones.clipboard : { write: escritura };
+    Object.defineProperty(navigator, 'clipboard', { value: clipboard, configurable: true });
+    (window as any).ClipboardItem = 'item' in opciones ? opciones.item : falsoItem();
+    fixture = TestBed.createComponent(SignatureCanvasComponent);
+    fixture.detectChanges();
+    c = fixture.componentInstance;
+  }
+
+  const textos = (): string[] =>
+    [...fixture.nativeElement.querySelectorAll('.hoja__acciones button')].map((b) => (b as HTMLElement).textContent!.trim());
+  const boton = (): HTMLButtonElement | undefined =>
+    [...fixture.nativeElement.querySelectorAll('.hoja__acciones button')].find((b) => /Copiar/.test((b as HTMLElement).textContent!)) as HTMLButtonElement | undefined;
+  const aviso = (): string => fixture.nativeElement.querySelector('.nota [aria-live="polite"]').textContent.replace(/\s+/g, ' ').trim();
+  const copiadoEnLaUltimaLlamada = (): Promise<Blob> => escritura.calls.mostRecent().args[0][0].datos['image/png'];
+
+  function firmar(): void {
+    const canvas: HTMLCanvasElement = fixture.nativeElement.querySelector('canvas');
+    const r = canvas.getBoundingClientRect();
+    canvas.dispatchEvent(puntero('pointerdown', r.left + 10, r.top + 10));
+    canvas.dispatchEvent(puntero('pointermove', r.left + 90, r.top + 60));
+    canvas.dispatchEvent(puntero('pointerup', r.left + 90, r.top + 60));
+    fixture.detectChanges();
+  }
+
+  beforeEach(() => {
+    escritura = jasmine.createSpy('write').and.returnValue(Promise.resolve());
+  });
+
+  afterEach(() => {
+    if (original.clipboard) Object.defineProperty(navigator, 'clipboard', original.clipboard);
+    else delete (navigator as any).clipboard;
+    (window as any).ClipboardItem = original.item;
+  });
+
+  it('entrega a write, dentro del propio clic, un ClipboardItem cuyo valor es una promesa de Blob image/png', async () => {
+    montar();
+    firmar();
+    boton()!.click();
+    // Sin await entre el clic y la comprobación: la llamada tuvo que ser síncrona (Safari lo exige)
+    expect(escritura).toHaveBeenCalledTimes(1);
+    const [items] = escritura.calls.mostRecent().args;
+    expect(items.length).toBe(1);
+    const promesa = items[0].datos['image/png'];
+    expect(promesa instanceof Promise).withContext('el valor es una promesa, no un Blob ya resuelto').toBeTrue();
+    const blob = await promesa;
+    expect(blob instanceof Blob).toBeTrue();
+    expect(blob.type).toBe('image/png');
+    expect(blob.size).toBeGreaterThan(100);
+  });
+
+  it('copia la misma imagen que descarga «Descargar PNG»: mismo tamaño, transparente y con tinta negra', async () => {
+    montar();
+    firmar();
+    const canvas: HTMLCanvasElement = fixture.nativeElement.querySelector('canvas');
+    c.copiar();
+    const copiado = await copiadoEnLaUltimaLlamada();
+    const descargado = await new Promise<Blob>((ok) => canvas.toBlob((b) => ok(b!), 'image/png'));
+    expect(new Uint8Array(await copiado.arrayBuffer())).toEqual(new Uint8Array(await descargado.arrayBuffer()));
+    const mapa = await createImageBitmap(copiado);
+    expect([mapa.width, mapa.height]).toEqual([canvas.width, canvas.height]);
+    const tmp = document.createElement('canvas');
+    tmp.width = mapa.width;
+    tmp.height = mapa.height;
+    const ctx = tmp.getContext('2d')!;
+    ctx.drawImage(mapa, 0, 0);
+    const px = ctx.getImageData(0, 0, tmp.width, tmp.height).data;
+    expect(px[3]).withContext('esquina transparente').toBe(0);
+    let opacos = 0;
+    for (let i = 0; i < px.length; i += 4) if (px[i + 3] === 255) { opacos++; expect([px[i], px[i + 1], px[i + 2]]).toEqual([0, 0, 0]); }
+    expect(opacos).toBeGreaterThan(50);
+  });
+
+  it('también copia en el modo «Escribir», con el tamaño del lienzo', async () => {
+    montar();
+    c.cambiarModo('escribir');
+    await TestBed.inject(TextSignatureService).cargar();
+    c.escribir('María Fernanda');
+    fixture.detectChanges();
+    boton()!.click();
+    expect(escritura).toHaveBeenCalledTimes(1);
+    const blob = await copiadoEnLaUltimaLlamada();
+    const mapa = await createImageBitmap(blob);
+    const canvas: HTMLCanvasElement = fixture.nativeElement.querySelector('canvas');
+    expect([mapa.width, mapa.height]).toEqual([canvas.width, canvas.height]);
+    expect(blob.size).toBeGreaterThan(500);
+  });
+
+  it('anuncia la copia en una región aria-live="polite" que ya existía antes de copiar', async () => {
+    montar();
+    firmar();
+    expect(aviso()).toBe('');
+    boton()!.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(aviso()).toContain('Firma copiada como imagen PNG');
+    expect(fixture.nativeElement.querySelector('.sello')).toBeNull();
+  });
+
+  it('sin firma el botón está deshabilitado y no copia nada', () => {
+    montar();
+    expect(boton()!.disabled).toBeTrue();
+    c.copiar();
+    expect(escritura).not.toHaveBeenCalled();
+  });
+
+  it('el aviso de copia y el sello de descarga no conviven: el último gana, y cambiar de formato retira la copia', async () => {
+    montar();
+    spyOn(TestBed.inject(DownloadService), 'downloadAsPNG');
+    firmar();
+    c.descargar();
+    fixture.detectChanges();
+    expect(c.ultimaDescarga).toBe('png');
+    expect(fixture.nativeElement.querySelector('.sello')).not.toBeNull();
+
+    boton()!.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(c.ultimaDescarga).toBeNull();
+    expect(fixture.nativeElement.querySelector('.sello')).toBeNull();
+    expect(c.copia).toBe('ok');
+
+    c.descargar();
+    fixture.detectChanges();
+    expect(c.copia).toBeNull();
+    expect(aviso()).toBe('');
+
+    boton()!.click();
+    await fixture.whenStable();
+    c.cambiarFormato('svg');
+    fixture.detectChanges();
+    expect(c.copia).toBeNull();
+  });
+
+  it('si la escritura falla (permiso denegado, sin foco…) dice qué hacer', async () => {
+    escritura.and.returnValue(Promise.reject(new DOMException('denegado', 'NotAllowedError')));
+    montar();
+    firmar();
+    boton()!.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(c.copia).toBe('error');
+    expect(aviso()).toContain('No se pudo copiar la imagen. Usa Descargar PNG.');
+  });
+
+  it('si write lanza al instante, también muestra el aviso', async () => {
+    escritura.and.throwError('boom');
+    montar();
+    firmar();
+    boton()!.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(aviso()).toContain('No se pudo copiar la imagen');
+  });
+
+  it('con SVG elegido, el aviso de error manda a elegir PNG en «Formato»', async () => {
+    escritura.and.returnValue(Promise.reject(new Error('x')));
+    montar();
+    firmar();
+    c.cambiarFormato('svg');
+    boton()!.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(aviso()).toContain('Elige PNG en «Formato»');
+  });
+
+  describe('sin soporte, el botón no existe', () => {
+    it('sin navigator.clipboard', () => { montar({ clipboard: undefined }); expect(boton()).toBeUndefined(); expect(c.puedeCopiar).toBeFalse(); });
+    it('sin clipboard.write', () => { montar({ clipboard: { readText: () => Promise.resolve('') } }); expect(boton()).toBeUndefined(); });
+    it('sin ClipboardItem', () => { montar({ item: undefined }); expect(boton()).toBeUndefined(); });
+    it('con ClipboardItem.supports(image/png) en false', () => { montar({ item: falsoItem(() => false) }); expect(boton()).toBeUndefined(); });
+    it('con supports en true sí aparece', () => { montar({ item: falsoItem((t) => t === 'image/png') }); expect(boton()).toBeDefined(); });
+    it('sin contexto seguro', () => {
+      spyOnProperty(window, 'isSecureContext', 'get').and.returnValue(false);
+      montar();
+      expect(boton()).toBeUndefined();
+    });
+    it('los demás botones siguen ahí, en su orden: Limpiar, Descargar', () => {
+      montar({ clipboard: undefined });
+      expect(textos()).toEqual(['Limpiar', 'Descargar PNG']);
+    });
+  });
+
+  it('con soporte el orden de los botones es el visual: Limpiar, Copiar como PNG, Descargar', () => {
+    montar();
+    expect(textos()).toEqual(['Limpiar', 'Copiar como PNG', 'Descargar PNG']);
+  });
+});
