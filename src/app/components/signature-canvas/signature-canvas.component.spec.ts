@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SignatureCanvasComponent } from './signature-canvas.component';
 import { DownloadService } from '../../services/download.service';
-import { TextSignatureService } from '../../services/text-signature.service';
+import { TextSignatureService, datosDeTrazado } from '../../services/text-signature.service';
 
 type Punto = { x: number; y: number };
 
@@ -153,6 +153,24 @@ describe('SignatureCanvasComponent: escribir el nombre', () => {
     expect([ancho, alto]).toEqual([canvas.width, canvas.height]);
     expect(d).toMatch(/^M/);
     expect(d.length).toBeGreaterThan(500);
+  });
+
+  it('el SVG de un nombre no se corta: sin NaN y con la misma caja que la tinta (María Fernanda a 800×450)', async () => {
+    const servicio = TestBed.inject(TextSignatureService);
+    const fuente = await servicio.cargar();
+    for (const nombre of ['María Fernanda', 'José Ñandú Íñiguez', 'Ana']) {
+      const trazados = servicio.disponer(fuente, nombre, 800, 450);
+      const d = datosDeTrazado(trazados);
+      expect(d).withContext(nombre).not.toContain('NaN');
+      const numeros = d.match(/-?\d+(\.\d+)?/g)!.map(Number);
+      const ordenes = (d.match(/[MLCQZ]/g) ?? []).length;
+      const esperadas = trazados.reduce((s, t) => s + t.commands.length, 0);
+      expect(ordenes).withContext(nombre + ': todas las órdenes del trazado').toBe(esperadas);
+      expect(numeros.every(Number.isFinite)).withContext(nombre).toBeTrue();
+      const xs = numeros.filter((_, i) => i % 2 === 0);
+      const caja = trazados.map((t) => t.getBoundingBox());
+      expect(Math.max(...xs)).withContext(nombre + ': llega al final del nombre').toBeGreaterThan(Math.max(...caja.map((b) => b.x2)) - 1);
+    }
   });
 
   it('un nombre largo cabe entero en el lienzo, en una o dos líneas', async () => {

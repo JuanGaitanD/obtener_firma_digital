@@ -1,7 +1,7 @@
 import { Component, ElementRef, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DownloadService } from '../../services/download.service';
-import { TextSignatureService } from '../../services/text-signature.service';
+import { TextSignatureService, datosDeTrazado } from '../../services/text-signature.service';
 import type { Font, Path } from 'opentype.js/dist/opentype.mjs';
 
 @Component({
@@ -202,7 +202,7 @@ export class SignatureCanvasComponent implements AfterViewInit, OnDestroy {
     if (!this.fuente) return;
     const { width, height } = this.canvas;
     this.trazadosTexto = this.textoService.disponer(this.fuente, this.nombre, width, height);
-    this.vista = this.trazadosTexto.map((t) => t.toPathData(2)).join(' ');
+    this.vista = datosDeTrazado(this.trazadosTexto);
   }
 
   /** Limpiar borra lo del modo activo; lo del otro modo se conserva. */

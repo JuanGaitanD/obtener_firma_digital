@@ -1,6 +1,25 @@
 import { Injectable } from '@angular/core';
 import type { Font, Path } from 'opentype.js/dist/opentype.mjs';
 
+const n2 = (v: number | undefined): string => String(Math.round((v ?? 0) * 100) / 100);
+
+/**
+ * Datos de trazado SVG con dos decimales. No se usa `Path.toPathData(2)` de opentype.js 2.0.0:
+ * con valores como 269.00000000000006 su redondeo devuelve NaN y corta la firma.
+ */
+export function datosDeTrazado(trazados: Path[]): string {
+  const partes: string[] = [];
+  for (const t of trazados) {
+    for (const c of t.commands) {
+      if (c.type === 'Z') partes.push('Z');
+      else if (c.type === 'C') partes.push(`C${n2(c.x1)} ${n2(c.y1)} ${n2(c.x2)} ${n2(c.y2)} ${n2(c.x)} ${n2(c.y)}`);
+      else if (c.type === 'Q') partes.push(`Q${n2(c.x1)} ${n2(c.y1)} ${n2(c.x)} ${n2(c.y)}`);
+      else partes.push(`${c.type}${n2(c.x)} ${n2(c.y)}`);
+    }
+  }
+  return partes.join('');
+}
+
 /** Tinta de la firma: la misma que el trazo dibujado. */
 export const TINTA = '#000000';
 
