@@ -5,6 +5,7 @@ Aplicación web desarrollada con Angular 19 que permite crear firmas digitales d
 ## Características
 
 - Dos modos, en un control segmentado: **Dibujar** (mouse, lápiz o dedo, también en Firefox de escritorio) y **Escribir** (tu nombre con una tipografía de firma manuscrita, La Belle Aurore, sobre la misma línea de firma, con vista previa en vivo; es la alternativa para quien no puede dibujar con puntero y se opera solo con teclado)
+- **Copiar como PNG**: copia la firma al portapapeles como imagen (la misma que descarga «Descargar PNG») para pegarla en un documento, un correo o un chat; el botón solo aparece si tu navegador sabe copiar imágenes
 - Descarga de firmas en formato PNG (fondo transparente) o SVG (vectorial), a elegir en un selector; en el modo Escribir el SVG lleva el nombre convertido a trazados, así que se ve igual sin la tipografía instalada
 - La firma no sale de tu navegador: se genera y se descarga en tu dispositivo (sin analítica ni fuentes de CDN)
 - Diseño de «papel secante con línea de firma», accesible y con foco visible
@@ -67,11 +68,15 @@ Los archivos compilados se guardarán en el directorio `dist/`. La compilación 
 3. Una vez que estés satisfecho con tu firma, puedes:
    - Hacer clic en "Limpiar" para borrar lo del modo activo (lo del otro modo se conserva) y empezar de nuevo
    - Elegir el formato en el selector "Formato" (PNG con fondo transparente, o SVG vectorial)
+   - Hacer clic en "Copiar como PNG" para copiar la firma como imagen y pegarla donde la necesites (siempre es PNG transparente, sin importar el formato elegido; el botón no aparece si tu navegador no puede copiar imágenes, y entonces se usa "Descargar")
    - Hacer clic en "Descargar" para guardar la firma en el formato elegido
 
 Los archivos descargados se guardarán con un nombre que incluye la fecha y hora: `firma-digital-YYYYMMDD-HHMMSS.png` o `.svg`. El PNG y el SVG de los dos modos tienen el mismo tamaño de lienzo, fondo transparente y tinta `#000000`.
 
 ## Navegadores
+
+«Copiar como PNG» funciona en Chrome, Edge y Firefox recientes (verificado con Chromium 156 y Firefox 159 leyendo de vuelta el portapapeles). En Safari e iOS el código sigue lo que exigen (llamada síncrona dentro del clic con el blob como promesa), pero no se pudo verificar en un dispositivo real. Donde el navegador no soporta copiar imágenes, el botón no se muestra.
+
 
 Objetivo (archivo `.browserslistrc`): Safari e iOS 14 o superior, Chrome y Edge 90 o superior, Firefox 90 o superior y Samsung Internet 15 o superior. Se probó en las versiones recientes de Chromium, Firefox y WebKit; ver `HANDOFF.md` para lo que no se pudo probar.
 
@@ -117,6 +122,10 @@ La aplicación incluye:
 - Movimiento reducido respetado (`prefers-reduced-motion`)
 - Contraste adecuado (WCAG AA)
 - Textos descriptivos
+
+## Licencias de terceros
+
+La tipografía de firma La Belle Aurore (© 2010 Kimberly Geswein) se distribuye bajo la SIL Open Font License 1.1. El texto completo está en [`public/fonts/LICENSE-la-belle-aurore.txt`](public/fonts/LICENSE-la-belle-aurore.txt) y se publica junto a la fuente (`fonts/LICENSE-la-belle-aurore.txt`).
 
 ## Licencia
 

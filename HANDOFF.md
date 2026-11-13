@@ -1,6 +1,6 @@
 # HANDOFF · Firma Digital
 
-Estado del trabajo. La segunda ronda (rama `design/ronda-2`, sobre el rediseño de `design/disenojg`) se integró en `main` por avance rápido y se publicó en GitHub Pages el 2026-11-12.
+Estado del trabajo. La segunda ronda (rama `design/ronda-2`) está en `main` y publicada en GitHub Pages desde el 2026-11-12. La tercera (rama `design/ronda-3`, sobre `main` = `ca7fadc`) añade «Copiar como PNG», la licencia OFL en el repo y un favicon que se lee en pestañas oscuras; está sin publicar a la espera de la revisión.
 
 ## Dónde estamos
 
@@ -13,9 +13,20 @@ La ronda 2 añadió, por decisión de Juan:
 - **Sin cargador de 800 ms.** La app aparece directamente (fundido de 200 ms). Se borró `loader/` y `isLoading`.
 - **Escribir el nombre como alternativa a dibujar.** Control segmentado «Dibujar» / «Escribir» (radios nativos). En «Escribir», un campo «Nombre para tu firma» pinta el nombre con **La Belle Aurore** (OFL-1.1, `@fontsource`, autoalojada en `fonts/`) sobre la misma línea de firma, con vista previa en vivo.
 - **Aviso de privacidad**: «Tu firma no sale de tu navegador: se genera y se descarga en tu dispositivo.» Verificado registrando las peticiones de un recorrido completo (ver abajo).
-- Pendientes del revisor: el selector «Formato» ya no parte su texto (pie apilado hasta 768 px), Tab sigue el orden visual (Formato → Limpiar → Descargar), sello y aviso dicen el mismo formato (cambiar el formato retira el sello), el nombre de archivo no se corta.
+- Pendientes del revisor: el selector «Formato» ya no parte su texto (pie apilado hasta 768 px; con la ronda 3, hasta 880 px), Tab sigue el orden visual (Formato → Limpiar → Descargar), sello y aviso dicen el mismo formato (cambiar el formato retira el sello), el nombre de archivo no se corta.
 - Favicon propio: la «X» con la línea de firma, papel sobre tinta (`public/favicon.svg`, `favicon-32.png`, `apple-touch-icon.png`). Se quitó el de Angular.
 - Navegadores objetivo declarados en `.browserslistrc` y respaldos de CSS (abajo).
+
+La ronda 3 añadió, a petición de Juan:
+
+- **Botón «Copiar como PNG»** entre «Limpiar» y «Descargar», en los dos modos (secundario con cuerpo, icono de copiar y texto). Copia **la misma imagen que descarga «Descargar PNG»** (mismo lienzo, mismo tamaño, transparente, tinta `#000000`) sin importar el formato elegido en «Formato». Sin firma queda deshabilitado, como «Descargar».
+  - `DownloadService.copiarPNG()` llama a `navigator.clipboard.write([new ClipboardItem({ 'image/png': promesaDelBlob })])` **de forma síncrona dentro del clic**, con la promesa del blob (de `canvas.toBlob`) dentro del `ClipboardItem`. Es lo que exigen Safari e iOS: no hay ningún `await` entre el gesto y `write`. El modo escribir arma su lienzo temporal también de forma síncrona. Una prueba lo vigila (`write` ya tiene que haber sido llamado al volver de `click()`, y el valor tiene que ser una `Promise`); se comprobó que falla si se difiere la llamada.
+  - **Detección** (`copiaDisponible()`, una vez al crear el componente): contexto seguro, `navigator.clipboard.write`, `ClipboardItem` y `ClipboardItem.supports('image/png') !== false`. Si falla cualquiera, **el botón no se pinta**. Los navegadores sin `supports()` (Safari 13.1–17.3) lo muestran si tienen el resto.
+  - **Aviso**: una región `aria-live="polite"` siempre presente en la línea bajo la hoja («Firma copiada como imagen PNG», o «No se pudo copiar la imagen. Usa Descargar PNG.»; con SVG elegido: «…Elige PNG en «Formato» y usa Descargar.»). Además el icono del botón pasa a un check (el nombre accesible no cambia). Copia, sello de descarga y aviso de descarga **no conviven**: la acción más reciente retira a las demás (también al cambiar de modo, escribir, limpiar o cambiar el formato).
+  - Maqueta: a < 600 px, «Limpiar» y «Copiar» comparten fila y «Descargar» ocupa la suya a todo el ancho; de 600 a 879 px los tres van en una fila bajo el selector, pegados a la derecha; desde **880 px** (antes 768) el selector y los tres botones comparten fila. Para que quepa a 1440, la opción del selector pasa de «PNG · fondo transparente» a **«PNG · transparente»** (el valor sigue siendo `png`). Orden de Tab = orden visual: Formato → Limpiar → Copiar → Descargar.
+- **Licencia OFL** de La Belle Aurore en `public/fonts/LICENSE-la-belle-aurore.txt` (copiada de `@fontsource/la-belle-aurore`, copyright de Kimberly Geswein). Se publica en `fonts/LICENSE-la-belle-aurore.txt` junto a la fuente; se quitó del `angular.json` la entrada que copiaba `LICENSE` desde `node_modules` (ya no hace falta, y la ruta publicada cambia de `fonts/LICENSE` a `fonts/LICENSE-la-belle-aurore.txt`).
+- **Favicon**: la baldosa de tinta lleva un filete de papel (`#f8ebeb`, 2 de 32 unidades) que la separa de una pestaña oscura y de la claridad de una clara; la «X» y la línea conservan su geometría y colores. `favicon.svg` y `favicon-32.png` regenerados. El `apple-touch-icon.png` **no cambia**: es un cuadrado a sangre sin borde y iOS lo recorta solo, así que no tiene el problema.
+- El comentario del CSS sobre el orden del pie estaba sobre `.signature-canvas--oculto`; ahora está sobre `.hoja__pie`.
 
 ## Cómo funciona la firma escrita
 
@@ -28,7 +39,7 @@ La ronda 2 añadió, por decisión de Juan:
 
 ## Cómo verificar
 
-- `npm run build` (sin avisos: cada hoja de componente queda por debajo de 4 kB; lo compartido está en `src/styles.css`) y `npm test`. Karma necesita un lanzador con `--no-sandbox --disable-gpu` en este equipo: `karma.conf.cjs` fuera del repo con `frameworks: ['jasmine', '@angular-devkit/build-angular']`, `customLaunchers: { CH: { base: 'ChromeHeadless', flags: ['--no-sandbox', '--disable-gpu'] } }`, `browsers: ['CH']`, pasado con `npx ng test --watch=false --karma-config=<ruta>`. Las pruebas cubren: trazo con ratón, tacto y lápiz sin `TouchEvent`, coordenadas con scroll, botón secundario ignorado, aviso/sello, y el modo escribir (sin nombre no descarga, PNG transparente y negro del tamaño del lienzo, SVG con trazados, nombre largo dentro del lienzo, limpiar y cambio de modo).
+- `npm run build` (sin avisos: cada hoja de componente queda por debajo de 4 kB; lo compartido está en `src/styles.css`) y `npm test`. Karma (29 pruebas: las 12 anteriores y 17 de copiar) necesita un lanzador con `--no-sandbox --disable-gpu` en este equipo: `karma.conf.cjs` fuera del repo con `frameworks: ['jasmine', '@angular-devkit/build-angular']`, `customLaunchers: { CH: { base: 'ChromeHeadless', flags: ['--no-sandbox', '--disable-gpu'] } }`, `browsers: ['CH']`, pasado con `npx ng test --watch=false --karma-config=<ruta>`. Las pruebas cubren: trazo con ratón, tacto y lápiz sin `TouchEvent`, coordenadas con scroll, botón secundario ignorado, aviso/sello, y el modo escribir (sin nombre no descarga, PNG transparente y negro del tamaño del lienzo, SVG con trazados, nombre largo dentro del lienzo, limpiar y cambio de modo).
 - Salida del modo dibujo: a 1440×900 el PNG y el SVG son equivalentes a los de `main` (800×450, fondo transparente, tinta `#000000`, grosor 2; la geometría del SVG varía menos de 1 px). A 390 px el lienzo es 324×213 y a 768 px 686×430 (la hoja gana ancho en móvil; es de la ronda 1).
 - Contrato de DOM del lienzo (sigue vigente): `.canvas-wrapper` es el padre directo del `<canvas>`, con `padding-inline: 16px` exactos, `max-width: 832px` y sin borde; el canvas conserva `width: 100%; height: auto; touch-action: none`. `setupCanvas()` mide el padre y resta 32, así que cambiar eso cambia lo que se exporta. Con la medición en cada evento ya no importa que el contenedor se mueva, solo su ancho.
 - La vista previa del modo escribir y el campo de nombre van sobre el lienzo (`position: absolute` dentro de `.canvas-wrapper`), con el `<canvas>` en `visibility: hidden` para que la altura no cambie.
@@ -36,6 +47,18 @@ La ronda 2 añadió, por decisión de Juan:
 ## Cómo se publica
 
 GitHub Pages sirve la rama `gh-pages` (raíz) en https://juangaitand.github.io/obtener_firma_digital/. No hay script: se construye con `npx ng build --base-href /obtener_firma_digital/` y el contenido de `dist/obtener-firma-digital/browser/` se copia a la raíz de `gh-pages` (conservando su `.gitignore`), en un commit propio. **En Git Bash de Windows, prefija `MSYS_NO_PATHCONV=1`**: si no, la ruta `/obtener_firma_digital/` se convierte en `C:/Program Files/Git/obtener_firma_digital/` y el `<base href>` sale roto. Las rutas de iconos, fuentes y del chunk de opentype son relativas a la base. Tras publicar, comprobar que `fonts/la-belle-aurore-latin-400-normal.woff`, `favicon.svg` y los chunks responden 200 bajo esa ruta.
+
+## Copiar como PNG por navegador
+
+Probado en navegador real con Playwright, a 390 y 1440 px, sobre este código (también bajo `/obtener_firma_digital/`):
+
+| Motor | Botón | Resultado |
+|---|---|---|
+| Chromium 156 | Se muestra (`supports('image/png')` es `true`) | Copia y **lee de vuelta** el portapapeles (`clipboard-read`/`clipboard-write` concedidos): la imagen copiada es **idéntica píxel a píxel** (0 distintos) a la que descarga «Descargar PNG», en los dos modos y los dos anchos (324×213 y 800×450, esquina transparente, 0 píxeles opacos que no sean negros). |
+| Firefox 159 | Se muestra | Copia y también permite leer de vuelta: 0 píxeles distintos, mismos casos. |
+| WebKit 27.2 (Playwright) | **Oculto**: `ClipboardItem.supports('image/png')` devuelve `false` | Sin errores. Forzando `supports()` a `true` solo para la prueba, `clipboard.write` se rechaza con `NotAllowedError` y la app muestra «No se pudo copiar la imagen. Usa Descargar PNG.» Es el comportamiento que se espera: ese motor no puede escribir imágenes en el portapapeles y no le ofrecemos el botón. |
+
+**Safari e iOS reales: no verificados** (aquí no hay Safari ni iPhone; el WebKit de Playwright no es Safari y no tiene el portapapeles de macOS/iOS). El código cumple lo que Safari exige: `write` se llama de forma síncrona dentro del clic y el blob entra como **promesa** dentro del `ClipboardItem`, de modo que Safari no pierde la activación del usuario mientras `toBlob` termina. Lo que no se sabe es si `supports('image/png')` devuelve `true` en el Safari de Juan (si devolviera `false`, el botón no aparece y no hay otro efecto). Pruébalo en el iPhone con el enlace publicado: toca «Copiar como PNG» y pega en Notas o Mensajes.
 
 ## Navegadores objetivo
 
@@ -50,17 +73,19 @@ Respaldos añadidos o comprobados:
 - `appearance: base-select` ya iba dentro de `@supports`; el `select` nativo dibujado funciona sin él. `-webkit-appearance: none` también en el campo de texto (iOS).
 - `forced-colors: active`: el anillo usa `Highlight`; el segmento activo, `Highlight`/`HighlightText`; el lienzo, su guía, la vista previa y el campo de nombre se quedan sobre papel claro (`forced-color-adjust: none` en `.canvas-wrapper`) porque la tinta es negra y con el fondo oscuro del sistema no se vería.
 - Pointer Events (Safari ≥ 13, Chrome ≥ 55, Firefox ≥ 59): sin `TouchEvent`, sin `mouse*` ni `touch*`. `setPointerCapture` va en `try/catch`.
-- Autoprefixer expande `inset` donde hace falta. Sin `color-mix`, `@container`, `:has` imprescindible, `structuredClone`, `Array.at`, `inert`, `ResizeObserver` ni `navigator.clipboard`. Public Sans variable declara `font-display: swap` y tiene `system-ui` de respaldo.
+- Autoprefixer expande `inset` donde hace falta. Sin `color-mix`, `@container`, `:has` imprescindible, `structuredClone`, `Array.at`, `inert` ni `ResizeObserver`. `navigator.clipboard` solo se usa para el botón «Copiar como PNG», con detección y el botón oculto si no hay soporte. Public Sans variable declara `font-display: swap` y tiene `system-ui` de respaldo.
 - Safari 14.0 (no 14.1) no tiene `gap` en flex: iconos y texto de los botones quedarían pegados, pero todo se lee y funciona.
 
 ## Lo no probado de verdad
 
+- **Copiar como PNG en Safari e iOS** (ver arriba) y, en general:
 - Safari e iOS **reales**, Samsung Internet y navegadores viejos (Safari 14, Chrome 90, Firefox 90): Playwright solo trae versiones recientes (Chromium 156, Firefox 159, WebKit 27.2). Los respaldos están escritos pero no ejercitados en motores antiguos.
 - Tacto real: en Chromium se emuló con eventos táctiles de CDP (DPR 3, dibuja y no hace scroll). Firefox no emula `isMobile` y WebKit de Playwright no dibuja con tacto: ahí solo se comprobó el tamaño de los objetivos.
 - Lector de pantalla real (NVDA, VoiceOver): el modo escribir está pensado para teclado y lector (radios nativos con `fieldset` y `legend`, campo con etiqueta, estado en `role="status"`) pero no se escuchó.
 - Zoom real del navegador (se emuló con 640×400 a DPR 2) y modo de alto contraste real de Windows (solo la emulación de `forced-colors`).
 - Cómo se ve la firma escrita con alfabetos no latinos o con más de 60 caracteres (el campo los corta). Sí se comprobó con «José Ñandú Íñiguez» y con un nombre de 60 caracteres en Chromium, Firefox y WebKit.
 - La escala por `devicePixelRatio` del lienzo y su reajuste al rotar siguen sin hacerse (tocan `setupCanvas`).
+- Un fallo real de escritura en Chromium y Firefox (permiso denegado, ventana sin foco): no se pudo provocar en Playwright. El camino de fallo se ejercitó en Karma (promesa rechazada y `write` que lanza) y en WebKit real (rechazo `NotAllowedError`).
 - `AGENTS.md`, `CLAUDE.md` y `wigi.json` no existen; no se crearon.
 
 ## Preguntas de Juan, ya resueltas
@@ -72,7 +97,7 @@ Respaldos añadidos o comprobados:
 
 ## Revisión independiente de la ronda 2 (2026-11-12)
 
-Veredicto: apto con correcciones, ya aplicadas: la firma escrita salía cortada en la vista previa y el SVG por el redondeo de opentype.js (bloqueante; ahora 0 de 30 nombres fallan y el SVG tiene la misma tinta que el PNG en Chromium, Firefox y WebKit) y faltaba un espacio entre el nombre de archivo y el aviso de descarga. Pasan build, Karma (12 de 12), la línea base del dibujo, el trazado (desvío de 0,2 px o menos tras scroll y zoom en los tres motores; Firefox de escritorio firma con ratón) y la privacidad (solo peticiones al propio origen). P3 abiertos: la licencia OFL de La Belle Aurore se publica junto a la fuente pero no está copiada en el repo; el favicon se distingue poco sobre pestaña oscura; un comentario fuera de sitio en el CSS del componente. `npm audit` da avisos de Angular que ya estaban en `main`; ninguno viene de las dependencias nuevas.
+Veredicto: apto con correcciones, ya aplicadas (los tres P3 abiertos —licencia, favicon y comentario— se cerraron en la ronda 3): la firma escrita salía cortada en la vista previa y el SVG por el redondeo de opentype.js (bloqueante; ahora 0 de 30 nombres fallan y el SVG tiene la misma tinta que el PNG en Chromium, Firefox y WebKit) y faltaba un espacio entre el nombre de archivo y el aviso de descarga. Pasan build, Karma (12 de 12), la línea base del dibujo, el trazado (desvío de 0,2 px o menos tras scroll y zoom en los tres motores; Firefox de escritorio firma con ratón) y la privacidad (solo peticiones al propio origen). P3 abiertos: la licencia OFL de La Belle Aurore se publica junto a la fuente pero no está copiada en el repo; el favicon se distingue poco sobre pestaña oscura; un comentario fuera de sitio en el CSS del componente. `npm audit` da avisos de Angular que ya estaban en `main`; ninguno viene de las dependencias nuevas.
 
 ## Qué queda pendiente
 
